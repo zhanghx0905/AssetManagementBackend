@@ -17,8 +17,11 @@ def serve_static(request, path='/index.html'):
 
     Actually, static files shall be served separately, for example with nginx.
     '''
+    print(path)
     path = '%s/%s' % (getattr(settings, 'STATICFILES_DIR'), path)
     print(path)
+    print("123")
+    
     if os.path.isfile(path):
         return FileResponse(open(path, 'rb'))
     return HttpResponseNotFound()
