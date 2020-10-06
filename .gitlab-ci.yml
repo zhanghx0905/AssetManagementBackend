@@ -32,29 +32,29 @@ build:
     # - npm install
     # - cd ..
 
-unit-test:
-  extends: .test
-  script:
-    - coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
-    - BACKEND_RET=$?
-    - coverage xml -o coverage-reports/coverage.xml
-    - coverage report
-    # - cd frontend/
-    # - npm test
-    # - FRONTEND_RET=$?
-    # - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
-    - exit $BACKEND_RET
-  after_script:
-    - SUFFIX=$RANDOM
-    - curl "http://10.0.0.11/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
-    - tar -xf "/tmp/sonar-$SUFFIX.tar.gz" -C /opt
-    - /opt/sonar-scanner/bin/sonar-scanner
+# unit-test:
+#   extends: .test
+#   script:
+#     - coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
+#     - BACKEND_RET=$?
+#     - coverage xml -o coverage-reports/coverage.xml
+#     - coverage report
+#     # - cd frontend/
+#     # - npm test
+#     # - FRONTEND_RET=$?
+#     # - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
+#     - exit $BACKEND_RET
+#   after_script:
+#     - SUFFIX=$RANDOM
+#     - curl "http://10.0.0.11/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
+#     - tar -xf "/tmp/sonar-$SUFFIX.tar.gz" -C /opt
+#     - /opt/sonar-scanner/bin/sonar-scanner
 
 style-test:
   extends: .test
   # allow_failure: true
   script:
-    - pylint --load-plugins=pylint_django app meeting
+    - pylint --load-plugins=pylint_django app UsersManagemet
     - BACKEND_RET=$?
     # - cd frontend/
     # - npm run lint
