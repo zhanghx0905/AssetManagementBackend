@@ -62,9 +62,9 @@ build:
 #     - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
 #     - exit $BACKEND_RET
 
-# deploy:
-#   stage: deploy
-#   script:
-#     - deployer dyno replace $CI_PROJECT_NAME "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" "$REGISTRY_USER" "$REGISTRY_PWD"
-#   only:
-#     - master
+deploy:
+  stage: deploy
+  script:
+    - deployer dyno replace $CI_PROJECT_NAME "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" "$REGISTRY_USER" "$REGISTRY_PWD"
+  only:
+    - master
