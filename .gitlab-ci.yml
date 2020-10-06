@@ -1,0 +1,70 @@
+image: registry.secoder.net/tool/deployer
+
+stages:
+  - build
+#  - test
+#  - deploy
+
+build:
+  stage: build
+  script:
+    - export BUILD_IMAGE_NAME=$CI_REGISTRY_IMAGE
+    - export BUILD_IMAGE_TAG=$CI_COMMIT_REF_SLUG
+    - export BUILD_IMAGE_USERNAME=$CI_REGISTRY_USER
+    - export BUILD_IMAGE_PASSWORD=$CI_REGISTRY_PASSWORD
+    - deployer build
+  
+
+# # Job template for test stage
+# .test:
+#   image: nikolaik/python-nodejs:python3.8-nodejs12
+#   stage: test
+
+#   cache:
+#     key: ${CI_COMMIT_REF_SLUG}
+#     paths:
+#       - frontend/node_modules/
+
+#   before_script:
+#     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
+#     - cd frontend/
+#     - npm config set registry https://registry.npm.taobao.org
+#     - npm install
+#     - cd ..
+
+# unit-test:
+#   extends: .test
+#   script:
+#     - coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
+#     - BACKEND_RET=$?
+#     - coverage xml -o coverage-reports/coverage.xml
+#     - coverage report
+#     - cd frontend/
+#     - npm test
+#     - FRONTEND_RET=$?
+#     - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
+#     - exit $BACKEND_RET
+#   after_script:
+#     - SUFFIX=$RANDOM
+#     - curl "http://10.0.0.11/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
+#     - tar -xf "/tmp/sonar-$SUFFIX.tar.gz" -C /opt
+#     - /opt/sonar-scanner/bin/sonar-scanner
+
+# style-test:
+#   extends: .test
+#   # allow_failure: true
+#   script:
+#     - pylint --load-plugins=pylint_django app meeting
+#     - BACKEND_RET=$?
+#     - cd frontend/
+#     - npm run lint
+#     - FRONTEND_RET=$?
+#     - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
+#     - exit $BACKEND_RET
+
+# deploy:
+#   stage: deploy
+#   script:
+#     - deployer dyno replace $CI_PROJECT_NAME "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" "$REGISTRY_USER" "$REGISTRY_PWD"
+#   only:
+#     - master
