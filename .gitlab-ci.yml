@@ -50,17 +50,17 @@ build:
 #     - tar -xf "/tmp/sonar-$SUFFIX.tar.gz" -C /opt
 #     - /opt/sonar-scanner/bin/sonar-scanner
 
-style-test:
-  extends: .test
-  # allow_failure: true
-  script:
-    - pylint --load-plugins=pylint_django app
-    - BACKEND_RET=$?
-    - cd frontend/
-    - npm run lint
-    - FRONTEND_RET=$?
-    - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
-    - exit $BACKEND_RET
+# style-test:
+#   extends: .test
+#   # allow_failure: true
+#   script:
+#     - pylint --load-plugins=pylint_django app
+#     - BACKEND_RET=$?
+#     - cd frontend/
+#     - npm run lint
+#     - FRONTEND_RET=$?
+#     - if [ $FRONTEND_RET \> 0 ]; then exit $FRONTEND_RET; fi;
+#     - exit $BACKEND_RET
 
 deploy:
   stage: deploy

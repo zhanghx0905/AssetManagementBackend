@@ -122,3 +122,4 @@ STATIC_URL = '/static/'
 # Local settings
 STATICFILES_DIR = os.path.join(BASE_DIR, 'static')
 from config.local_settings import *
+
