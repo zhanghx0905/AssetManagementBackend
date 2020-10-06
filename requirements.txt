@@ -1,0 +1,4 @@
+django==2.2.4
+gunicorn==19.9.0
+prometheus-client==0.7.1
+psycopg2-binary==2.8.3
