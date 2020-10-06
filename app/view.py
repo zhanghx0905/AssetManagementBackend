@@ -3,11 +3,9 @@ Basic views
 '''
 import os
 
-from django.conf import settings
-from django.http import FileResponse
-from django.http import HttpResponse
-from django.http import HttpResponseNotFound
 import prometheus_client as prometheus
+from django.conf import settings
+from django.http import FileResponse, HttpResponse, HttpResponseNotFound
 
 
 def serve_static(request, path='/index.html'):
@@ -17,11 +15,9 @@ def serve_static(request, path='/index.html'):
 
     Actually, static files shall be served separately, for example with nginx.
     '''
-    print(path)
-    path = '%s/%s' % (getattr(settings, 'STATICFILES_DIR'), path)
-    print(path)
-    print("123")
-    
+    # print(path)
+    path = f"{getattr(settings, 'STATICFILES_DIR')}/{path}"
+
     if os.path.isfile(path):
         return FileResponse(open(path, 'rb'))
     return HttpResponseNotFound()

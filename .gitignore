@@ -20,3 +20,4 @@ xunit-reports/
 
 **/.DS_Store
 *.sqlite3
+*.vscode
