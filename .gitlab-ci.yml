@@ -54,7 +54,7 @@ style-test:
   extends: .test
   # allow_failure: true
   script:
-    - pylint --load-plugins=pylint_django app UsersManagemet
+    - pylint --load-plugins=pylint_django app
     - BACKEND_RET=$?
     # - cd frontend/
     # - npm run lint
