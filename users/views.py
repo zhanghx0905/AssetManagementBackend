@@ -7,11 +7,17 @@ from django.http.response import JsonResponse
 from .models import User
 
 
+RESPONSE_CODE = {
+    "OK": 200, "invalid password": 204, 
+    "nonexistent users": 201
+}
+
+
 def gen_response(code: int, data: str):
     return JsonResponse({
         'code': code,
         'data': data
-    }, status=code)
+    })
 
 
 def user_register(request):
@@ -41,12 +47,12 @@ def user_login(request):
         name = post_args.get('email', None)
         pwd = post_args.get('password', None)
         if name is None or pwd is None:
-            return gen_response(400, 'name or password are not given')
+            return gen_response(RESPONSE_CODE['nonexistent users'], 'nonexistent users')
         target_user = User.objects.filter(name=name)
         if len(target_user) != 1:
-            return gen_response(400, 'the user does not exist')
+            return gen_response(RESPONSE_CODE['nonexistent users'], 'nonexistent users')
         target_user = target_user[0]
         if not check_password(pwd, target_user.pwd):
-            return gen_response(204, 'the password invalid')
+            return gen_response(RESPONSE_CODE['invalid password'], 'invalid password')
         return gen_response(200, 'OK')
     return gen_response(405, f'method {request.method} not allowed')
