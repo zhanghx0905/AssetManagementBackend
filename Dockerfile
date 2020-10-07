@@ -1,5 +1,5 @@
 
-FROM python:3.7.9
+FROM python:3.8.5
 
 ENV HOME=/opt/app
 
