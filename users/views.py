@@ -39,7 +39,7 @@ def user_register(request):
             user.full_clean()
             user.save()
         except ValidationError as e:
-            return gen_response(400, f"Validation Error of user: {e}")
+            return gen_response(201, f"Validation Error of user: {e}")
         return gen_response(200, 'OK')
     return gen_response(405, f'method {request.method} not allowed')
 
