@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 from django.http.response import JsonResponse
@@ -14,8 +16,11 @@ def gen_response(code: int, data: str):
 
 def user_register(request):
     if request.method == 'POST':
-        name = request.POST.get('name', None)
-        pwd = request.POST.get('password', None)
+        post_args = json.loads(request.body)
+        name = post_args.get('email', None)
+        pwd = post_args.get('password', None)
+        # name = request.POST.get('name', None)
+        # pwd = request.POST.get('password', None)
         if name is None or pwd is None:
             return gen_response(400, 'name or password are not given')
         pwd = make_password(pwd, None)
@@ -32,8 +37,9 @@ def user_register(request):
 
 def user_login(request):
     if request.method == 'POST':
-        name = request.POST.get('name', None)
-        pwd = request.POST.get('password', None)
+        post_args = json.loads(request.body)
+        name = post_args.get('email', None)
+        pwd = post_args.get('password', None)
         if name is None or pwd is None:
             return gen_response(400, 'name or password are not given')
         target_user = User.objects.filter(name=name)
@@ -41,6 +47,6 @@ def user_login(request):
             return gen_response(400, 'the user does not exist')
         target_user = target_user[0]
         if not check_password(pwd, target_user.pwd):
-            return gen_response(400, 'the password invalid')
+            return gen_response(204, 'the password invalid')
         return gen_response(200, 'OK')
     return gen_response(405, f'method {request.method} not allowed')
