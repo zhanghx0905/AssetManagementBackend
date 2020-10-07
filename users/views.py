@@ -37,7 +37,7 @@ def user_register(request):
             user.save()
         except ValidationError as e:
             return gen_response(400, f"Validation Error of user: {e}")
-        return gen_response(200, pwd)
+        return gen_response(200, 'OK')
     return gen_response(405, f'method {request.method} not allowed')
 
 
@@ -54,5 +54,13 @@ def user_login(request):
         target_user = target_user[0]
         if not check_password(pwd, target_user.pwd):
             return gen_response(RESPONSE_CODE['invalid password'], 'invalid password')
-        return gen_response(200, 'OK')
+        return gen_response(200, make_password(name))
+    return gen_response(405, f'method {request.method} not allowed')
+
+
+def user_info(request):
+    if request.method == 'GET':
+        args = json.loads(request.body)
+        print(args)
+        return gen_response(200, "OK")
     return gen_response(405, f'method {request.method} not allowed')
