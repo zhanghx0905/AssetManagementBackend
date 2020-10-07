@@ -1,3 +1,4 @@
 django==2.2.4
 gunicorn==19.9.0
 prometheus-client==0.7.1
+bcrypt==3.2.0 
