@@ -8,7 +8,7 @@ from .models import User
 
 
 RESPONSE_CODE = {
-    "OK": 200, "invalid password": 204, 
+    "invalid password": 204, 
     "nonexistent users": 201
 }
 
@@ -29,6 +29,8 @@ def user_register(request):
         # pwd = request.POST.get('password', None)
         if name is None or pwd is None:
             return gen_response(400, 'name or password are not given')
+        if User.objects.exists(name=name):
+            return gen_response(400, 'user name already exists')
         pwd = make_password(pwd, None)
 
         user = User(name=name, pwd=pwd)
@@ -37,7 +39,7 @@ def user_register(request):
             user.save()
         except ValidationError as e:
             return gen_response(400, f"Validation Error of user: {e}")
-        return gen_response(200, pwd)
+        return gen_response(200, f'{name}-{make_password(name, None)}')
     return gen_response(405, f'method {request.method} not allowed')
 
 
@@ -55,4 +57,12 @@ def user_login(request):
         if not check_password(pwd, target_user.pwd):
             return gen_response(RESPONSE_CODE['invalid password'], 'invalid password')
         return gen_response(200, 'OK')
+    return gen_response(405, f'method {request.method} not allowed')
+
+
+def user_info(request):
+    if request.method == 'GET':
+        get_args = json.loads(request.body)
+        print(get_args)
+        return gen_response(200, "OK")
     return gen_response(405, f'method {request.method} not allowed')
