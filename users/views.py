@@ -1,4 +1,5 @@
 import json
+from collections import namedtuple
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
@@ -8,9 +9,11 @@ from .models import User
 
 
 RESPONSE_CODE = {
-    "OK": 200, "invalid password": 204, 
+    "OK": 200, "invalid password": 204,
     "nonexistent users": 201
 }
+CUR_USER_TYPE = namedtuple('Cookie', 'name cookie')
+CUR_USER = None
 
 
 def gen_response(code: int, data: str):
@@ -54,13 +57,16 @@ def user_login(request):
         target_user = target_user[0]
         if not check_password(pwd, target_user.pwd):
             return gen_response(RESPONSE_CODE['invalid password'], 'invalid password')
-        return gen_response(200, make_password(name))
+        global CUR_USER
+        CUR_USER = CUR_USER_TYPE(name, make_password(name))
+        return gen_response(200, CUR_USER.cookie)
     return gen_response(405, f'method {request.method} not allowed')
 
 
 def user_info(request):
     if request.method == 'GET':
-        args = json.loads(request.body)
-        print(args)
-        return gen_response(200, "OK")
+        token = request.headers['Token']
+        if token != CUR_USER.cookie:
+            return gen_response(200, "Token error")
+        return gen_response(200, CUR_USER.name)
     return gen_response(405, f'method {request.method} not allowed')
