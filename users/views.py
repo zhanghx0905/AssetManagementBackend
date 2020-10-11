@@ -174,5 +174,5 @@ def user_info(request):
             "role": gen_roles(user),
             "avatar": ''
         }
-        return gen_response(status=0, usermessage=info)
+        return gen_response(status=0, userinfo=info)
     return gen_response(code=405, message=f'method {request.method} not allowed')
