@@ -23,11 +23,11 @@ unit-test:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
   script:
     - exit 0
-#    - coverage run --source app -m pytest --junit-xml=xunit-reports/xunit-result.xml
-#    - ret=$?
-#    - coverage xml -o coverage-reports/coverage.xml
-#    - coverage report
-#    - exit $ret
+    - coverage run --source app -m pytest --junit-xml=xunit-reports/xunit-result.xml
+    - ret=$?
+    - coverage xml -o coverage-reports/coverage.xml
+    - coverage report
+    - exit $ret
   after_script:
     - SUFFIX=$RANDOM
     - curl "http://10.0.0.11/sonar-scanner.tar.gz" -s -o "/tmp/sonar-$SUFFIX.tar.gz"
@@ -35,17 +35,17 @@ unit-test:
     - /opt/sonar-scanner/bin/sonar-scanner
 
 
-# style-test:
-#  image: python:3.8.5
-#  stage: test
-  # allow_failure: true
+style-test:
+  image: python:3.8.5
+  stage: test
+  allow_failure: true
 
-#  before_script:
-#    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
-#  script:
-#    - pylint --load-plugins=pylint_django app users
-#    - BACKEND_RET=$?
-#    - exit $BACKEND_RET
+  before_script:
+    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
+  script:
+    - pylint --load-plugins=pylint_django app api
+    - BACKEND_RET=$?
+    - exit $BACKEND_RET
 
 deploy:
   stage: deploy
