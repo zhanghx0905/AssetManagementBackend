@@ -154,7 +154,7 @@ def user_login(request):
 
 def user_logout(request):
     if request.method == 'POST':
-        token = request.headers['Token']
+        token = request.COOKIES['Token']
         user = CUR_USERS.get(token, None)
         if user is None:
             return gen_response(message="User not online", status=1)
@@ -165,7 +165,7 @@ def user_logout(request):
 
 def user_info(request):
     if request.method == 'POST':
-        token = request.headers['Token']
+        token = request.COOKIES['Token']
         user = CUR_USERS.get(token, None)
         if user is None:
             return gen_response(message="Token error", status=1)
