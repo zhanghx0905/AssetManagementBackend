@@ -35,6 +35,7 @@ def gen_roles(user: User) -> list:
         role.append('ASSET')
     if user.is_system_manager:
         role.append('SYSTEM')
+    role.append('STAFF')
     return role
 
 
@@ -174,5 +175,5 @@ def user_info(request):
             "role": gen_roles(user),
             "avatar": ''
         }
-        return gen_response(status=0, userinfo=info)
+        return gen_response(status=0, userInfo=info)
     return gen_response(code=405, message=f'method {request.method} not allowed')
