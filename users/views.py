@@ -3,18 +3,12 @@ import json
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
-from django.http.response import JsonResponse
 
+from app.utils import gen_response
 from .models import User
-
 
 # token(str): user(User)
 CUR_USERS = {}
-
-
-def gen_response(**data):
-    ''' gerenate json response, at response.data '''
-    return JsonResponse(data)
 
 
 def parse_args(dic: str, *args):
