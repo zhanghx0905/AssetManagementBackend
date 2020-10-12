@@ -12,9 +12,4 @@ def get_logs(request):
         200: success
         201: file not found
     '''
-    print(request)
-    print(request.body)
-    print(request.path)
-    print(request.method)
-    print(request.META.get('REMOTE_ADDR', ''))
     return gen_response(code=200)

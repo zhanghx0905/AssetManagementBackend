@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=global-statement
+disable=global-statement,too-few-public-methods
 
 [TYPECHECK]
 # pylint cannot deal with classes created at run time.

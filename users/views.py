@@ -1,4 +1,6 @@
 ''' user/view.py, all in domain api/user/ '''
+
+import logging
 import json
 
 from django.contrib.auth.hashers import check_password, make_password
@@ -9,6 +11,7 @@ from .models import User
 
 # token(str): user(User)
 CUR_USERS = {}
+LOGGER = logging.getLogger('web.log')
 
 
 def parse_args(dic: str, *args):
