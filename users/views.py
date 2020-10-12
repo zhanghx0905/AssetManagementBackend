@@ -38,6 +38,7 @@ def gen_roles(user: User) -> list:
         role.append('ASSET')
     if user.is_system_manager:
         role.append('SYSTEM')
+    role.append('STAFF')
     return role
 
 
