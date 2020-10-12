@@ -45,7 +45,7 @@ style-test:
   script:
     - pylint --load-plugins=pylint_django app users
     - BACKEND_RET=$?
-    - exit BACKEND_RET
+    - exit $BACKEND_RET
 
 deploy:
   stage: deploy
