@@ -1,3 +1,6 @@
+''' user/test.py '''
 from django.test import TestCase
 
-# Create your tests here.
+
+class UserTest(TestCase):
+    ''' Test for user app '''

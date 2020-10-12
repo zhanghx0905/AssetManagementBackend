@@ -1,9 +1,11 @@
+''' users/apps.py '''
 from django.apps import AppConfig
 from django.contrib.auth.hashers import make_password
 from django.db.utils import OperationalError
 
 
 def add_admin():
+    ''' 增加用户名密码均为 admin 的超级用户 '''
     from .models import User
     try:
         if not User.objects.filter(username='admin'):
@@ -18,6 +20,7 @@ def add_admin():
 
 
 class UsersConfig(AppConfig):
+    ''' UsersConfig '''
     name = 'users'
 
     def ready(self) -> None:
