@@ -1,5 +1,6 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+*/__pycache__/
 *.py[cod]
 *$py.class
 
@@ -21,3 +22,4 @@ xunit-reports/
 **/.DS_Store
 *.sqlite3
 *.vscode
+prepare.sh

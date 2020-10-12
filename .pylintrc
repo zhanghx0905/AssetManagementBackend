@@ -1,0 +1,7 @@
+[MESSAGES CONTROL]
+disable=global-statement
+
+[TYPECHECK]
+# pylint cannot deal with classes created at run time.
+# https://stackoverflow.com/a/42814971/5359105
+ignored-classes=SQLAlchemy,scoped_session
