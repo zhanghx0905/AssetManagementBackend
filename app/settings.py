@@ -137,7 +137,9 @@ LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 LOGS_FILE_DIR = os.path.join(LOGS_DIR, 'web-log.log')
 os.makedirs(LOGS_DIR, exist_ok=True)
 
-LOGING_FORMAT = '"time": "%(asctime)s", "level": "%(levelname)s", "method": "%(method)s", "path": "%(path)s", "body": "%(body)s", "status_code": "%(status_code)s"'
+LOGING_FORMAT = ('"time": "%(asctime)s", "level": "%(levelname)s",'
+                 '"method": "%(method)s", "path": "%(path)s",'
+                 '"body": "%(body)s", "status_code": "%(status_code)s"')
 # "func": "%(module)s.%(funcName)s:%(lineno)d",
 # "message": "%(message)s"
 

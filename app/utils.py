@@ -9,7 +9,7 @@ def gen_response(**data):
 
 
 def parse_args(dic: str, *args, **default_args):
-    ''' parse para from json str 
+    ''' parse para from json str
     return valid(bool), result(list or str)
     '''
     dic = json.loads(dic)
