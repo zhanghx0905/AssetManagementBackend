@@ -131,19 +131,15 @@ STATIC_URL = '/static/'
 
 # Local settings
 STATICFILES_DIR = os.path.join(BASE_DIR, 'static')
+
+# Logging
 LOGS_DIR = os.path.join(BASE_DIR, 'logs')
+LOGS_FILE_DIR = os.path.join(LOGS_DIR, 'web-log.log')
 os.makedirs(LOGS_DIR, exist_ok=True)
 
-LOGING_FORMAT = '''{
-    "time": "%(asctime)s",'
-    "level": "%(levelname)s",
-    "method": "%(method)s",
-    "path": "%(path)s",
-    "body": "%(body)s",
-    "status_code": "%(status_code)s",
-    "func": "%(module)s.%(funcName)s:%(lineno)d",
-    "message": "%(message)s"
-}'''
+LOGING_FORMAT = '"time": "%(asctime)s", "level": "%(levelname)s", "method": "%(method)s", "path": "%(path)s", "body": "%(body)s", "status_code": "%(status_code)s"'
+# "func": "%(module)s.%(funcName)s:%(lineno)d",
+# "message": "%(message)s"
 
 LOGGING = {
     # 版本
@@ -172,7 +168,7 @@ LOGGING = {
             'level': 'DEBUG',
             # 时间滚动切分
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(LOGS_DIR, 'web-log.log'),
+            'filename': LOGS_FILE_DIR,
             'formatter': 'standard',
             # 调用过滤器
             'filters': ['request_info'],

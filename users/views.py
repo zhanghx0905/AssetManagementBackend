@@ -1,29 +1,16 @@
 ''' user/view.py, all in domain api/user/ '''
 
 import logging
-import json
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 
-from app.utils import gen_response
+from app.utils import gen_response, parse_args
 from .models import User
 
 # token(str): user(User)
 CUR_USERS = {}
 LOGGER = logging.getLogger('web.log')
-
-
-def parse_args(dic: str, *args):
-    ''' parse para from json str '''
-    dic = json.loads(dic)
-    res = []
-    for arg in args:
-        val = dic.get(arg, None)
-        if val is None:
-            return (False, f"{arg} is not given")
-        res.append(val)
-    return (True, res)
 
 
 def gen_roles(user: User) -> list:
