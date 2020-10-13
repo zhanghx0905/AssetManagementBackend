@@ -140,13 +140,9 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 LOGING_FORMAT = ('"time": "%(asctime)s", "level": "%(levelname)s",'
                  '"method": "%(method)s", "path": "%(path)s",'
                  '"body": "%(body)s", "status_code": "%(status_code)s"')
-# "func": "%(module)s.%(funcName)s:%(lineno)d",
-# "message": "%(message)s"
 
 LOGGING = {
-    # 版本
     'version': 1,
-    # 是否禁止默认配置的记录器
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
@@ -159,25 +155,16 @@ LOGGING = {
         'request_info': {'()': 'app.middlewares.RequestLogFilter'},
     },
     'handlers': {
-        # 标准输出
-        'console': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler',
-            'formatter': 'standard'
-        },
         # 自定义 handlers，输出到文件
         'restful_api': {
             'level': 'DEBUG',
-            # 时间滚动切分
-            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOGS_FILE_DIR,
             'formatter': 'standard',
-            # 调用过滤器
             'filters': ['request_info'],
-            # 每天凌晨切分
-            'when': 'MIDNIGHT',
-            # 保存 30 天
-            'backupCount': 30,
+            'maxBytes': 4194304,  # 4 MB
+            'backupCount': 10,
+            'encoding': 'utf-8',
         },
     },
     'loggers': {

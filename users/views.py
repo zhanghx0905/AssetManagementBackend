@@ -1,6 +1,6 @@
 ''' user/view.py, all in domain api/user/ '''
 
-import logging
+# import logging
 
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
@@ -10,7 +10,7 @@ from .models import User
 
 # token(str): user(User)
 CUR_USERS = {}
-LOGGER = logging.getLogger('web.log')
+# LOGGER = logging.getLogger('web.log')
 
 
 def gen_roles(user: User) -> list:
@@ -37,7 +37,6 @@ def user_list(request):
         res = []
         for user in all_users:
             res.append({'name': user.username,
-                        'password': user.password,
                         'department': user.department,
                         'role': gen_roles(user)
                         })
@@ -130,7 +129,7 @@ def user_edit(request):
     '''  api/user/edit POST
     编辑用户。
     para: name(str), password(str), department(str), role([...])
-    return: exist(bool), code =
+    return: code =
         200: success
         201: parameter error
         202：no such user

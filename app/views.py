@@ -15,7 +15,7 @@ def get_logs(request):
         valid, res = parse_args(request.body, 'offset', 'size', offset=0, size=20)
         offset, size = res if valid else (0, 20)
         data = []
-        with open(LOGS_FILE_DIR, 'r') as logs:
-            data = logs.readlines()[-1-offset - size:-1-offset]
+        with open(LOGS_FILE_DIR, 'r', encoding='utf8') as logs:
+            data = logs.readlines()[-1 - offset - size:-1 - offset]
         return gen_response(code=200, data='\n'.join(data))
     return gen_response(code=405, message=f'method {request.method} not allowed')
