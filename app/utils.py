@@ -17,7 +17,7 @@ def parse_args(dic: str, *args, **default_args):
     try:
         dic = json.loads(dic)
     except JSONDecodeError:
-        return (False, 'input data is not JSON')
+        dic = {}
     res = []
     for arg in args:
         val = dic.get(arg, default_args.get(arg, None))
