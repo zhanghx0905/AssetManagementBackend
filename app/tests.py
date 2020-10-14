@@ -28,10 +28,10 @@ class AppTests(TestCase):
         self.assertEqual(get_logs_len(logs), 1)
 
         # 测试 offset, size
-        response = self.client.get(path, {'offset': 1, 'size': 5})
+        response = self.client.get(path, {'offset': 1, 'size': 1})
         self.assertEqual(response.json()['code'], 200)
         logs = response.json()['data']
-        self.assertEqual(get_logs_len(logs), 5)
+        self.assertEqual(get_logs_len(logs), 1)
 
     def test_parse_args(self):
         ''' utils.parse_args '''
