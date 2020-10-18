@@ -1,16 +1,46 @@
 ''' user/view.py, all in domain api/user/ '''
 
-# import logging
+import logging
 
+import jwt
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.exceptions import ValidationError
 
+from app.settings import SECRET_KEY
 from app.utils import gen_response, parse_args
 from .models import User
 
-# token(str): user(User)
-CUR_USERS = {}
-# LOGGER = logging.getLogger('web.log')
+LOGGER = logging.getLogger('web.log')
+
+
+def auth_permission_required(view_func):
+    ''' 用于用户验证的装饰器
+    该装饰器会验证 cookies 里的 token 是否合法，
+    并将对应用户以参数 user 传给被装饰函数
+    错误时返回 status=1, code=401
+    '''
+    def _wrapped_view(request, *args, **kwargs):
+        ''' 装饰器内函数 '''
+        token = request.COOKIES['Token']
+        try:
+            decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+            username = decoded['username']
+        except jwt.ExpiredSignatureError:
+            return gen_response(status=1, message='Token expired', code=401)
+        except jwt.InvalidTokenError:
+            return gen_response(status=1, message='Invalid token', code=401)
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return gen_response(status=1, message='no such user', code=401)
+
+        if user.token != token:
+            return gen_response(status=1, message='user not online', code=401)
+        if not user.is_active:
+            return gen_response(status=1, message='user is not activated', code=401)
+        return view_func(request, user=user, *args, **kwargs)
+    return _wrapped_view
 
 
 def gen_roles(user: User) -> list:
@@ -33,12 +63,13 @@ def user_list(request):
         200: success
     '''
     if request.method == 'GET':
-        all_users = User.objects.all()
+        all_users = User.objects.filter()
         res = []
         for user in all_users:
             res.append({'name': user.username,
                         'department': user.department,
-                        'role': gen_roles(user)
+                        'role': gen_roles(user),
+                        'is_active': user.is_active,
                         })
 
         return gen_response(code=200, data=res)
@@ -63,10 +94,10 @@ def user_delete(request):
 
         if name == 'admin':
             return gen_response(message='admin can not be deleted', code=203)
-        user = User.objects.filter(username=name)
+        user = User.objects.get(username=name)
         if not user:
             return gen_response(message='no such user', code=202)
-        user[0].delete()
+        user.delete()
         return gen_response(code=200)
     return gen_response(code=405, message=f'method {request.method} not allowed')
 
@@ -158,6 +189,31 @@ def user_edit(request):
     return gen_response(code=405, message=f'method {request.method} not allowed')
 
 
+def user_lock(request):
+    ''' api/user/lock POST
+    锁定用户
+    para: username(str), active(0/1)
+    return: code =
+        200: success
+        201: parameter error
+        202：no such user
+    '''
+    if request.method == 'POST':
+        valid, res = parse_args(request.body, 'username', 'active')
+        if not valid:
+            return gen_response(code=201, message=res)
+        username, active = res
+        if username == 'admin':
+            return gen_response(message='admin can not be locked', code=203)
+        user = User.objects.filter(username=username)
+        if not user:
+            return gen_response(message='no such user', code=202)
+
+        user.update(is_active=active)
+        return gen_response(code=200)
+    return gen_response(code=405, message=f'method {request.method} not allowed')
+
+
 def user_login(request):
     '''  api/user/login POST
     用户登录。
@@ -173,21 +229,26 @@ def user_login(request):
         if not valid:
             return gen_response(code=201, message=res)
         name, pwd = res
-
-        user = User.objects.filter(username=name)
-        if not user:
+        try:
+            user = User.objects.get(username=name)
+        except User.DoesNotExist:
             return gen_response(message='nonexistent users', status=1)
-        user = user[0]
+
         if not check_password(pwd, user.password):
             return gen_response(message='invalid password', status=1)
-        global CUR_USERS
-        token = make_password(name)
-        CUR_USERS[token] = user
-        return gen_response(token=token, status=0)
+        if not user.is_active:
+            return gen_response(message='user is locked', status=1)
+
+        user.token = user.generate_jwt_token()
+        user.save()
+
+        LOGGER.debug('%s login', name)
+        return gen_response(token=user.token, status=0)
     return gen_response(code=405, message=f'method {request.method} not allowed')
 
 
-def user_logout(request):
+@auth_permission_required
+def user_logout(request, user):
     '''  api/user/login POST
     用户登出。
     return: status =
@@ -195,16 +256,16 @@ def user_logout(request):
         1: fall
     '''
     if request.method == 'POST':
-        token = request.COOKIES['Token']
-        user = CUR_USERS.get(token, None)
-        if user is None:
-            return gen_response(message="User not online", status=1)
-        CUR_USERS.pop(token)
+        user.token = ''
+        user.save()
+
+        LOGGER.debug('%s login', user.username)
         return gen_response(status=0)
     return gen_response(code=405, message=f'method {request.method} not allowed')
 
 
-def user_info(request):
+@auth_permission_required
+def user_info(request, user):
     '''  api/user/login POST
     用户信息。
     return: userInfo = {name(str), role([]), avatar('')}
@@ -213,10 +274,6 @@ def user_info(request):
         1: fall
     '''
     if request.method == 'POST':
-        token = request.COOKIES['Token']
-        user = CUR_USERS.get(token, None)
-        if user is None:
-            return gen_response(message="Token error", status=1)
         info = {
             "name": user.username,
             "role": gen_roles(user),
