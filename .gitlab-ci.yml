@@ -24,7 +24,7 @@ unit-test:
   script:
     - python manage.py makemigrations users
     - python manage.py migrate
-    - coverage run --source app -m pytest --junit-xml=xunit-reports/xunit-result.xml
+    - coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
     - ret=$?
     - coverage xml -o coverage-reports/coverage.xml
     - coverage report

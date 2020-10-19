@@ -16,7 +16,6 @@ logs
 
 # Unittest / Coverage report
 .coverage
-.coveragerc
 .pytest_cache/
 coverage-reports/
 xunit-reports/
