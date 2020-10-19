@@ -23,4 +23,5 @@ xunit-reports/
 **/.DS_Store
 *.sqlite3
 *.vscode
+**/migrations
 prepare.sh
