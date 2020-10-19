@@ -22,7 +22,7 @@ unit-test:
   before_script:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
   script:
-    - coverage run --source app users -m pytest --junit-xml=xunit-reports/xunit-result.xml
+    - coverage run --source app -m pytest --junit-xml=xunit-reports/xunit-result.xml
     - ret=$?
     - coverage xml -o coverage-reports/coverage.xml
     - coverage report

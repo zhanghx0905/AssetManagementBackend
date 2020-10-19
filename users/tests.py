@@ -3,8 +3,8 @@ import json
 
 from django.test import TestCase
 
-from .models import User
 from .apps import add_admin
+from .models import User
 
 
 class UserTest(TestCase):
@@ -16,7 +16,7 @@ class UserTest(TestCase):
         add_admin()
         admin = User.objects.get(username='admin')
         self.assertEqual(admin.__str__(), 'admin')
-        # admin.generate_jwt_token()
+        self.token = admin.generate_jwt_token()
 
     def test_user_add(self):
         ''' views.user_add '''
@@ -61,7 +61,45 @@ class UserTest(TestCase):
         self.assertEqual(len(users_list), 1)
         self.assertEqual(users_list[0]['name'], 'admin')
 
-    def test_user_login(self):
+    def test_user_edit(self):
+        ''' views.user_edit '''
+        path = '/api/user/edit'
+        illegal_input(self, path)
+
+        add_admin()
+        paras = {
+            'name': 'admin',
+            'password': 'admin',
+            'department': 'thu',
+            'role': ['IT', 'ASSET', 'SYSTEM']
+        }
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+        admin = User.objects.get(username='admin')
+        self.assertEqual(admin.department, paras['department'])
+
+        paras['name'] = 'nothisman'
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 202)
+
+    def test_user_lock(self):
+        ''' views.user_lock '''
+        path = '/api/user/lock'
+        illegal_input(self, path)
+
+        add_admin()
+        paras = {
+            'username': 'admin',
+            'active': False
+        }
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 203)
+
+        paras['username'] = 'zhanghx'
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 202)
+
+    def test_user_login_logout(self):
         ''' views.user_login '''
 
     def test_user_info(self):

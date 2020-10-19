@@ -55,4 +55,4 @@ class AppTests(TestCase):
     def test_wsgi(self):
         ''' wsgi '''
         from . import wsgi
-        self.assertEqual(wsgi.__name__, 'wsgi')
+        self.assertEqual(wsgi.__name__, 'app.wsgi')
