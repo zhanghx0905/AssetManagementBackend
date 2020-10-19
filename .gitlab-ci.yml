@@ -22,6 +22,7 @@ unit-test:
   before_script:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
   script:
+    - python manage.py makemigrations users
     - python manage.py migrate
     - coverage run --source app -m pytest --junit-xml=xunit-reports/xunit-result.xml
     - ret=$?
