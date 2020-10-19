@@ -197,6 +197,7 @@ def user_lock(request):
         200: success
         201: parameter error
         202：no such user
+        203: admin can not be locked
     '''
     if request.method == 'POST':
         valid, res = parse_args(request.body, 'username', 'active')

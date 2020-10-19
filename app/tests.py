@@ -51,3 +51,8 @@ class AppTests(TestCase):
         response = gen_response(name='zhang')
         response_para = json.loads(str(response.content, encoding='utf8'))
         self.assertEqual(response_para['name'], 'zhang')
+
+    def test_wsgi(self):
+        ''' wsgi '''
+        from . import wsgi
+        self.assertEqual(wsgi.__name__, 'app.wsgi')
