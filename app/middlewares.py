@@ -1,11 +1,10 @@
 ''' app/middlewares.py '''
 import json
-import jwt
 import logging
 import threading
 
+import jwt
 from django.utils.deprecation import MiddlewareMixin
-
 
 LOCAL = threading.local()
 

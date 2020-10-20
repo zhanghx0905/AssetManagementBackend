@@ -1,9 +1,10 @@
 ''' users/models.py '''
 
 from datetime import datetime, timedelta
-from django.contrib.auth.models import PermissionsMixin, AbstractBaseUser, Permission
 
 import jwt
+from django.contrib.auth.models import (AbstractBaseUser, Permission,
+                                        PermissionsMixin)
 from django.db import models
 
 from app.settings import SECRET_KEY

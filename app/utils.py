@@ -1,7 +1,6 @@
 ''' app/utils Project 级别的 utils 函数 '''
 import json
 import logging
-from json.decoder import JSONDecodeError
 
 from django.http.response import JsonResponse
 
@@ -21,7 +20,7 @@ def parse_args(dic: str, *args, **default_args):
     '''
     try:
         dic = json.loads(dic)
-    except JSONDecodeError:
+    except json.decoder.JSONDecodeError:
         dic = {}
     res = []
     for arg in args:

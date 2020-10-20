@@ -12,7 +12,7 @@ def add_admin():
             admin.set_password('admin')
             admin.save()
             admin.set_roles(['IT', 'ASSET', "SYSTEM"])
-            
+
     except OperationalError:
         pass
 
