@@ -22,5 +22,5 @@ def get_logs(request):
             logs = logs_file.readlines()[::-1]
             data = logs[offset: (offset + size)]
         data = [json.loads(line[:-1]) for line in data]
-        return gen_response(code=200, data=data)
-    return gen_response(code=405, message=f'method {request.method} not allowed')
+        return gen_response(code=200, data=data, message='获取日志')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')

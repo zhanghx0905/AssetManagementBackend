@@ -3,6 +3,7 @@ import json
 import logging
 import threading
 
+import jwt
 from django.utils.deprecation import MiddlewareMixin
 
 LOCAL = threading.local()
@@ -17,6 +18,7 @@ class RequestLogFilter(logging.Filter):
         record.body = getattr(LOCAL, 'body', 'none')
         record.path = getattr(LOCAL, 'path', 'none')
         record.method = getattr(LOCAL, 'method', 'none')
+        record.username = getattr(LOCAL, 'username', 'none')
         record.status_code = getattr(LOCAL, 'status_code', 'none')
 
         return True
@@ -46,10 +48,16 @@ class RequestLogMiddleware(MiddlewareMixin):
         LOCAL.body = body
         LOCAL.path = request.path
         LOCAL.method = request.method
+        try:
+            token = request.COOKIES['Token']
+            decoded = jwt.decode(token, verify=False)
+            LOCAL.username = decoded['username']
+        except KeyError:
+            pass
+        except jwt.PyJWTError:
+            pass
 
         response = self.get_response(request)
-
         LOCAL.status_code = response.status_code
-        self.api_logger.info('Http called')
 
         return response
