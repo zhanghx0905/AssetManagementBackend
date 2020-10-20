@@ -3,10 +3,8 @@
 # from django.shortcuts import render
 from datetime import datetime
 from django.core.exceptions import ValidationError
-from app.utils import gen_response, parse_args
+from app.utils import gen_response, parse_args, parse_list
 from .models import Asset
-
-
 
 
 # Create your views here.
@@ -45,7 +43,7 @@ def asset_add(request):
     '''
     if request.method == 'POST':
         try:
-            pack = parse_args(
+            pack_list = parse_list(
                 request.body,
                 'is_quantity',
                 'quantity',
@@ -63,29 +61,31 @@ def asset_add(request):
                 owner='',
                 department='',
             )
-            is_quantity, quantity, value, name, description, parent, owner, department = pack
+
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
-        asset = Asset(
-            is_quantity=is_quantity,
-            quantity=quantity,
-            value=value,
-            name=name,
-            description=description,
-            parent=parent,
-            owner=owner,
-            department=department,
-            status='IDLE',
-            start_time=datetime.now()
-        )
+        for pack in pack_list:
+            is_quantity, quantity, value, name, description, parent, owner, department = pack
+            asset = Asset(
+                is_quantity=is_quantity,
+                quantity=quantity,
+                value=value,
+                name=name,
+                description=description,
+                parent=parent,
+                owner=owner,
+                department=department,
+                status='IDLE',
+                start_time=datetime.now()
+            )
 
-        try:
-            asset.full_clean()
-            asset.save()
-        except ValidationError as error:
-            return gen_response(message=str(error), code=400)
-        return gen_response(code=200, message=f'添加资产{name}')
+            try:
+                asset.full_clean()
+                asset.save()
+            except ValidationError as error:
+                return gen_response(message=str(error), code=400)
+        return gen_response(code=200, message=f'添加资产{len(pack_list)}条')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 

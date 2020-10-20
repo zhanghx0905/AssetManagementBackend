@@ -44,3 +44,21 @@ def parse_args(dic: str, *args, **default_args) -> list:
             raise KeyError(f"http 参数 {arg} 没有给出")
         res.append(val)
     return res
+
+
+def parse_list(dic: str, *args, **default_args):
+    '''parse_arg 的列表版本，注意列表应对应在data字段'''
+    try:
+        dic = json.loads(dic)
+    except json.decoder.JSONDecodeError:
+        return []
+    res_list = []
+    for item in dic['data']:
+        res = []
+        for arg in args:
+            val = item.get(arg, default_args.get(arg, None))
+            if val is None:
+                raise KeyError(f"http 参数 {arg} 没有给出")
+            res.append(val)
+        res_list.append(res)
+    return res_list
