@@ -7,36 +7,51 @@ from app.utils import gen_response, parse_args
 from .models import User
 
 
-def auth_permission_required(view_func):
-    ''' 用于用户验证的装饰器
+def auth_permission_required(*perms):
+    ''' 
+    用于用户验证的装饰器
     该装饰器会验证 cookies 里的 token 是否合法，
     并将对应用户以参数 user 传给被装饰函数
     错误时返回 status=1, code=401
+    例:
+    @auth_permission_required(users.IT, users.SYSTEM)
+    def foo():
+        pass
     '''
-    def _wrapped_view(request, *args, **kwargs):
-        ''' 装饰器内函数 '''
-        token = request.COOKIES['Token']
-        try:
-            decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-            username = decoded['username']
-        except jwt.ExpiredSignatureError:
-            return gen_response(status=1, message='Token 已过期', code=401)
-        except jwt.InvalidTokenError:
-            return gen_response(status=1, message='Token 不合法', code=401)
+    def decorator(view_func):
+        ''' 多嵌套一层，为了给装饰器传参 '''
+        def _wrapped_view(request, *args, **kwargs):
+            ''' 装饰器内函数 '''
+            try:
+                token = request.COOKIES['Token']
+            except KeyError:
+                return gen_response(status=1, code=401, message='Token 未给出')
+            try:
+                decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
+                username = decoded['username']
+            except jwt.ExpiredSignatureError:
+                return gen_response(status=1, message='Token 已过期', code=401)
+            except jwt.InvalidTokenError:
+                return gen_response(status=1, message='Token 不合法', code=401)
 
-        try:
-            user = User.objects.get(username=username)
-        except User.DoesNotExist:
-            return gen_response(status=1, message='用户不存在', code=401)
+            try:
+                user: User = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return gen_response(status=1, message='用户不存在', code=401)
 
-        if user.token != token:
-            return gen_response(status=1, message='用户不在线', code=401)
-        if not user.is_active:
-            return gen_response(status=1, message='用户未激活', code=401)
-        return view_func(request, user=user, *args, **kwargs)
-    return _wrapped_view
+            if user.token != token:
+                return gen_response(status=1, message='用户不在线', code=401)
+            if not user.is_active:
+                return gen_response(status=1, message='用户未激活', code=401)
+            if not user.has_perms(perms):
+                return gen_response(status=1, message='用户权限不足', code=401)
+
+            return view_func(request, user=user, *args, **kwargs)
+        return _wrapped_view
+    return decorator
 
 
+# @auth_permission_required('users.SYSTEM')
 def user_list(request):
     ''' api/user/list GET
     返回所有用户的列表。
@@ -56,6 +71,7 @@ def user_list(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
+# @auth_permission_required('users.SYSTEM')
 def user_delete(request):
     ''' api/user/delete POST
     删除用户。
@@ -105,6 +121,7 @@ def user_exist(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
+# @auth_permission_required('users.SYSTEM')
 def user_add(request):
     '''  api/user/add POST
     添加用户。
@@ -134,6 +151,7 @@ def user_add(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
+# @auth_permission_required('users.SYSTEM')
 def user_edit(request):
     '''  api/user/edit POST
     编辑用户。
@@ -161,6 +179,7 @@ def user_edit(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
+# @auth_permission_required('users.SYSTEM')
 def user_lock(request):
     ''' api/user/lock POST
     锁定用户
@@ -219,7 +238,7 @@ def user_login(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required
+@auth_permission_required()
 def user_logout(request, user):
     '''  api/user/login POST
     用户登出。
@@ -235,7 +254,7 @@ def user_logout(request, user):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required
+@auth_permission_required()
 def user_info(request, user):
     '''  api/user/login POST
     用户信息。

@@ -141,7 +141,7 @@ os.makedirs(LOGS_DIR, exist_ok=True)
 LOGING_FORMAT = ('{"time": "%(asctime)s", "level": "%(levelname)s", '
                  '"method": "%(method)s", "path": "%(path)s", '
                  '"body": "%(body)s", "status_code": "%(status_code)s", '
-                 '"message": "%(message)s"}, "username": "%(username)s"')
+                 '"message": "%(message)s", "username": "%(username)s"}')
 
 LOGGING = {
     'version': 1,
