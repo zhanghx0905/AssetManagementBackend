@@ -16,7 +16,7 @@ def auth_permission_required(*perms):
     注意：被装饰函数必须有 user 这个参数
     例:
     @auth_permission_required(users.IT, users.SYSTEM)
-    def foo():
+    def foo(request, user):
         pass
     '''
     def decorator(view_func):
@@ -53,8 +53,8 @@ def auth_permission_required(*perms):
     return decorator
 
 
-# @auth_permission_required('users.SYSTEM')
-def user_list(request):
+@auth_permission_required('users.SYSTEM')
+def user_list(request, user):
     ''' api/user/list GET
     返回所有用户的列表。
     return: data([{}]), code =
@@ -101,7 +101,8 @@ def user_delete(request, user):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-def user_exist(request):
+@auth_permission_required('users.SYSTEM')
+def user_exist(request, user):
     ''' api/user/exist POST
     用户名是否存在。
     para: name(str)
@@ -123,8 +124,8 @@ def user_exist(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
-def user_add(request):
+@auth_permission_required('users.SYSTEM')
+def user_add(request, user):
     '''  api/user/add POST
     添加用户。
     para: name(str), password(str), department(str), role([...])
@@ -155,8 +156,8 @@ def user_add(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
-def user_edit(request):
+@auth_permission_required('users.SYSTEM')
+def user_edit(request, user):
     '''  api/user/edit POST
     编辑用户。
     para: name(str), password(str), department(str), role([...])
@@ -186,8 +187,8 @@ def user_edit(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
-def user_lock(request):
+@auth_permission_required('users.SYSTEM')
+def user_lock(request, user):
     ''' api/user/lock POST
     锁定用户
     para: username(str), active(0/1)
@@ -217,7 +218,7 @@ def user_lock(request):
 def user_login(request):
     '''  api/user/login POST
     用户登录。
-    para: name(str), password(str)
+    para: username(str), password(str)
     return: code =
         201: parameter error
             status =
