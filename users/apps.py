@@ -1,20 +1,18 @@
 ''' users/apps.py '''
 from django.apps import AppConfig
-from django.contrib.auth.hashers import make_password
 from django.db.utils import OperationalError
 
 
 def add_admin():
     ''' 增加用户名密码均为 admin 的超级用户 '''
     from .models import User
-    try:
+    try:    # 防止在数据表创建前调用，引发错误
         if not User.objects.filter(username='admin'):
-            admin = User(username='admin',
-                         password=make_password('admin', None),
-                         is_asset_manager=True,
-                         is_it_manager=True,
-                         is_system_manager=True)
+            admin = User(username='admin')
+            admin.set_password('admin')
             admin.save()
+            admin.set_roles(['IT', 'ASSET', "SYSTEM"])
+            
     except OperationalError:
         pass
 
