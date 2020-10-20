@@ -58,7 +58,6 @@ class RequestLogMiddleware(MiddlewareMixin):
             pass
 
         response = self.get_response(request)
-
         LOCAL.status_code = response.status_code
 
         return response
