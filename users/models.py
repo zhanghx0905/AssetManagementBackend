@@ -20,7 +20,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     department = models.CharField(max_length=30, default='', verbose_name='部门')
 
     # 状态
-    is_active = models.BooleanField(auto_created=True, default=True)
+    active = models.BooleanField(auto_created=True, default=True)
     token = models.CharField(max_length=100, auto_created=True, default='', blank=True)
 
     USERNAME_FIELD = 'username'

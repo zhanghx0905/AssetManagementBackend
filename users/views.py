@@ -8,7 +8,7 @@ from .models import User
 
 
 def auth_permission_required(*perms):
-    ''' 
+    '''
     用于用户验证的装饰器
     该装饰器会验证 cookies 里的 token 是否合法，
     并将对应用户以参数 user 传给被装饰函数
@@ -41,8 +41,9 @@ def auth_permission_required(*perms):
 
             if user.token != token:
                 return gen_response(status=1, message='用户不在线', code=401)
-            if not user.is_active:
+            if not user.active:
                 return gen_response(status=1, message='用户未激活', code=401)
+
             if not user.has_perms(perms):
                 return gen_response(status=1, message='用户权限不足', code=401)
 
@@ -64,15 +65,15 @@ def user_list(request):
             'name': user.username,
             'department': user.department,
             'role': user.gen_roles(),
-            'is_active': user.is_active,
+            'is_active': user.active,
         } for user in all_users]
 
         return gen_response(code=200, data=res, message='获取用户列表')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
-def user_delete(request):
+@auth_permission_required('users.SYSTEM')
+def user_delete(request, user):
     ''' api/user/delete POST
     删除用户。
     para: name(str)
@@ -132,7 +133,9 @@ def user_add(request):
         400: Validation Error when saving user
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body, 'name', 'password', 'department', 'role')
+        valid, res = parse_args(request.body,
+                                'name', 'password', 'department', 'role',
+                                department='')
         if not valid:
             return gen_response(code=201, message=res)
         name, pwd, department, roles = res
@@ -201,7 +204,7 @@ def user_lock(request):
         if not user:
             return gen_response(message='用户不存在', code=202)
 
-        user.update(is_active=active)
+        user.update(active=active)
         return gen_response(code=200)
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
@@ -212,7 +215,7 @@ def user_login(request):
     para: name(str), password(str)
     return: code =
         201: parameter error
-        status =
+            status =
         0: success
         1: fall
     '''
@@ -228,7 +231,7 @@ def user_login(request):
 
         if not user.check_password(pwd):
             return gen_response(message='密码有误', status=1)
-        if not user.is_active:
+        if not user.active:
             return gen_response(message='用户不处于活跃状态', status=1)
 
         user.token = user.generate_jwt_token()
