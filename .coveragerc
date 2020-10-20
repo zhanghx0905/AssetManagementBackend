@@ -1,5 +1,5 @@
 [run]
 branch = True
-source = app,users
+source = app,users,asset
 [report]
 show_missing = True
