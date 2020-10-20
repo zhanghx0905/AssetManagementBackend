@@ -31,16 +31,14 @@ class AppTests(TestCase):
 
     def test_parse_args(self):
         ''' utils.parse_args '''
-        valid, res = parse_args(json.dumps({'name': 'zhang'}), 'name')
-        self.assertTrue(valid)
+        res = parse_args(json.dumps({'name': 'zhang'}), 'name')
         self.assertEqual(res[0], 'zhang')
 
-        valid, res = parse_args('', 'name', name='zhang')
-        self.assertTrue(valid)
+        res = parse_args('', 'name', name='zhang')
         self.assertEqual(res[0], 'zhang')
 
-        valid = parse_args('', 'name')[0]
-        self.assertFalse(valid)
+        with self.assertRaises(KeyError):
+            parse_args('', 'name')
 
     def test_gen_response(self):
         ''' utils.gen_response '''

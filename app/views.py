@@ -14,8 +14,7 @@ def get_logs(request):
         200: success
     '''
     if request.method == 'POST':
-        _, res = parse_args(request.body, 'offset', 'size', offset=0, size=20)
-        offset, size = res
+        offset, size = parse_args(request.body, 'offset', 'size', offset=0, size=20)
 
         data = []
         with open(LOGS_FILE_DIR, 'r', encoding='utf8') as logs_file:
