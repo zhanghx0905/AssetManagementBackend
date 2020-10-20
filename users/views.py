@@ -13,6 +13,7 @@ def auth_permission_required(*perms):
     该装饰器会验证 cookies 里的 token 是否合法，
     并将对应用户以参数 user 传给被装饰函数
     错误时返回 status=1, code=401
+    注意：被装饰函数必须有 user 这个参数
     例:
     @auth_permission_required(users.IT, users.SYSTEM)
     def foo():
@@ -84,10 +85,10 @@ def user_delete(request, user):
         203: admin can't be deleted
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body, 'name')
-        if not valid:
-            return gen_response(code=201, message=res)
-        name = res[0]
+        try:
+            name = parse_args(request.body, 'name')[0]
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
 
         if name == 'admin':
             return gen_response(message='admin 不能被删除', code=203)
@@ -109,10 +110,10 @@ def user_exist(request):
         201: parameter error
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body, 'name')
-        if not valid:
-            return gen_response(code=201, message=res)
-        name = res[0]
+        try:
+            name = parse_args(request.body, 'name')[0]
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
         exist = True
         try:
             User.objects.get(username=name)
@@ -133,12 +134,12 @@ def user_add(request):
         400: Validation Error when saving user
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body,
-                                'name', 'password', 'department', 'role',
-                                department='')
-        if not valid:
-            return gen_response(code=201, message=res)
-        name, pwd, department, roles = res
+        try:
+            name, pwd, department, roles = parse_args(request.body,
+                                                      'name', 'password', 'department', 'role',
+                                                      department='')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
 
         user = User(username=name,
                     department=department)
@@ -165,10 +166,13 @@ def user_edit(request):
         202：no such user
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body, 'name', 'password', 'department', 'role')
-        if not valid:
-            return gen_response(code=201, message=res)
-        name, pwd, department, roles = res
+        try:
+            name, pwd, department, roles = parse_args(request.body,
+                                                      'name', 'password', 'department', 'role',
+                                                      department='')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+
         try:
             user = User.objects.get(username=name)
         except User.DoesNotExist:
@@ -194,10 +198,11 @@ def user_lock(request):
         203: admin can not be locked
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body, 'username', 'active')
-        if not valid:
-            return gen_response(code=201, message=res)
-        username, active = res
+        try:
+            username, active = parse_args(request.body, 'username', 'active')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+
         if username == 'admin':
             return gen_response(message='admin 必须处于活跃状态', code=203)
         user = User.objects.filter(username=username)
@@ -220,10 +225,11 @@ def user_login(request):
         1: fall
     '''
     if request.method == 'POST':
-        valid, res = parse_args(request.body, 'username', 'password')
-        if not valid:
-            return gen_response(code=201, message=res)
-        name, pwd = res
+        try:
+            name, pwd = parse_args(request.body, 'username', 'password')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+
         try:
             user = User.objects.get(username=name)
         except User.DoesNotExist:
