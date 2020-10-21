@@ -9,20 +9,59 @@ from .models import User
 
 class UserTest(TestCase):
     ''' Test for user app '''
-    token = None
 
-    def test_user_model(self):
-        ''' models.User '''
+    def setUp(self) -> None:
+        ''' 构造时添加一项 '''
+        user = User(username='zhanghx',
+                    department='thu')
+        user.set_password('zhanghx')
+        user.save()
+
         add_admin()
-        admin = User.objects.get(username='admin')
-        self.assertEqual(admin.__str__(), 'admin')
-        self.token = admin.generate_jwt_token()
+        response = self.client.post('/api/user/login',
+                                    data=json.dumps({'username': 'admin', 'password': 'admin'}),
+                                    content_type='json')
+        self.client.cookies['Token'] = response.json()['token']
 
-    def test_user_add(self):
+    def illegal_input(self, path: str):
+        ''' 对于只接受POST方法的api 测试不合法的输入 '''
+        response = self.client.get(path)
+        self.assertEqual(response.json()['code'], 405)
+
+        response = self.client.post(path)
+        self.assertEqual(response.json()['code'], 201)
+
+    def test_user_list(self):
+        ''' views.user_list '''
+        path = '/api/user/list'
+
+        response = self.client.post(path)
+        self.assertEqual(response.json()['code'], 405)
+
+        response = self.client.get(path)
+        self.assertEqual(response.json()['code'], 200)
+
+    def test_user_exist(self):
+        ''' views.user_exist '''
+        path = '/api/user/exist'
+
+        self.illegal_input(path)
+
+        response = self.client.post(path,
+                                    data=json.dumps({'name': 'admin'}),
+                                    content_type='json')
+        self.assertTrue(response.json()['exist'])
+
+        response = self.client.post(path,
+                                    data=json.dumps({'name': 'noone'}),
+                                    content_type='json')
+        self.assertFalse(response.json()['exist'])
+
+    def test_user_add_delete(self):
         ''' views.user_add '''
         path = '/api/user/add'
 
-        illegal_input(self, path)
+        self.illegal_input(path)
 
         paras = {
             'name': 'hexiao',
@@ -38,35 +77,29 @@ class UserTest(TestCase):
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 400)
 
-    def test_user_exist(self):
-        ''' views.user_exist '''
-        path = '/api/user/exist'
+        path = '/api/user/delete'
 
-        illegal_input(self, path)
-        add_admin()
-        response = self.client.post(path, data=json.dumps({'name': 'admin'}), content_type='json')
-        self.assertTrue(response.json()['exist'])
+        self.illegal_input(path)
 
-    def test_user_list(self):
-        ''' views.user_list '''
-        path = '/api/user/list'
-
-        response = self.client.post(path)
-        self.assertEqual(response.json()['code'], 405)
-
-        add_admin()
-        response = self.client.get(path)
+        paras['name'] = 'hexiao'
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
-        users_list = response.json()['data']
-        self.assertEqual(len(users_list), 1)
-        self.assertEqual(users_list[0]['name'], 'admin')
+        self.assertEqual(User.objects.filter(username=paras['name']).count(), 0)
+
+        paras['name'] = 'nosuchman'
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 202)
+
+        paras['name'] = 'admin'
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 203)
 
     def test_user_edit(self):
         ''' views.user_edit '''
         path = '/api/user/edit'
-        illegal_input(self, path)
 
-        add_admin()
+        self.illegal_input(path)
+
         paras = {
             'name': 'admin',
             'password': 'admin',
@@ -78,38 +111,78 @@ class UserTest(TestCase):
         admin = User.objects.get(username='admin')
         self.assertEqual(admin.department, paras['department'])
 
-        paras['name'] = 'nothisman'
+        paras['name'] = 'noone'
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 202)
 
     def test_user_lock(self):
         ''' views.user_lock '''
         path = '/api/user/lock'
-        illegal_input(self, path)
 
-        add_admin()
+        self.illegal_input(path)
+
         paras = {
             'username': 'admin',
             'active': False
-        }
-        response = self.client.post(path, data=json.dumps(paras), content_type='json')
-        self.assertEqual(response.json()['code'], 203)
+        }   # admin 不能锁定
+        response = self.client.post(path, data=json.dumps(paras), content_type='json').json()
+        self.assertEqual(response['code'], 203)
 
+        # 正常锁定
         paras['username'] = 'zhanghx'
+        response = self.client.post(path, data=json.dumps(paras), content_type='json').json()
+        self.assertEqual(response['code'], 200)
+        response = self.client.post('/api/user/login',
+                                    data=json.dumps({'username': 'zhanghx', 'password': 'zhanghx'}),
+                                    content_type='json')
+        self.assertEqual(response.json()['status'], 1)
+
+        # 用户不存在
+        paras['username'] = 'nosuchman'
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 202)
 
     def test_user_login_logout(self):
         ''' views.user_login '''
+        path = '/api/user/login'
+
+        self.illegal_input(path)
+
+        paras = {
+            'username': 'noone',
+            'password': 'wrong'
+        }   # 测试用户不存在
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['status'], 1)
+
+        paras['username'] = 'zhanghx'
+        # 测试密码错误
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['status'], 1)
+        # 正常登录在 setUp 中测试，锁定登录在 test_user_lock 中测试
+
+        paras['password'] = 'zhanghx'
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.client.cookies['Token'] = response.json()['token']
+
+        path = '/api/user/logout'
+        response = self.client.get(path)
+        self.assertEqual(response.json()['code'], 405)
+
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['status'], 0)
+
+        # 登出后尝试再登出
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['status'], 1)
 
     def test_user_info(self):
         ''' views.user_info '''
+        path = '/api/user/info'
 
+        response = self.client.get(path)
+        self.assertEqual(response.json()['code'], 405)
 
-def illegal_input(self: UserTest, path: str):
-    ''' 对于只接受POST方法的api 测试不合法的输入 '''
-    response = self.client.get(path)
-    self.assertEqual(response.json()['code'], 405)
-
-    response = self.client.post(path)
-    self.assertEqual(response.json()['code'], 201)
+        response = self.client.post(path).json()
+        self.assertFalse(response['status'])
+        self.assertEqual(response['userInfo']['name'], 'admin')

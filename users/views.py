@@ -7,16 +7,19 @@ from app.utils import gen_response, parse_args
 from .models import User
 
 
-def auth_permission_required(*perms):
+def auth_permission_required(*perms, require_user=True):
     '''
     用于用户验证的装饰器
     该装饰器会验证 cookies 里的 token 是否合法，
     并将对应用户以参数 user 传给被装饰函数
     错误时返回 status=1, code=401
-    注意：被装饰函数必须有 user 这个参数
+
+    如果 require_user=True
+    则被装饰函数必须有 user 这个参数
+
     例:
     @auth_permission_required(users.IT, users.SYSTEM)
-    def foo():
+    def foo(request, user):
         pass
     '''
     def decorator(view_func):
@@ -47,13 +50,14 @@ def auth_permission_required(*perms):
 
             if not user.has_perms(perms):
                 return gen_response(status=1, message='用户权限不足', code=401)
-
-            return view_func(request, user=user, *args, **kwargs)
+            if require_user:
+                return view_func(request, user=user, *args, **kwargs)
+            return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
 
 
-# @auth_permission_required('users.SYSTEM')
+@auth_permission_required('users.SYSTEM', require_user=False)
 def user_list(request):
     ''' api/user/list GET
     返回所有用户的列表。
@@ -73,8 +77,8 @@ def user_list(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required('users.SYSTEM')
-def user_delete(request, user):
+@auth_permission_required('users.SYSTEM', require_user=False)
+def user_delete(request):
     ''' api/user/delete POST
     删除用户。
     para: name(str)
@@ -95,12 +99,13 @@ def user_delete(request, user):
         try:
             user = User.objects.get(username=name)
         except User.DoesNotExist:
-            return gen_response(message='用户不存在', code=202)
+            return gen_response(message=f'欲删除用户 {name} 不存在', code=202)
         user.delete()
         return gen_response(code=200, message=f'删除用户 {name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
+@auth_permission_required('users.SYSTEM', require_user=False)
 def user_exist(request):
     ''' api/user/exist POST
     用户名是否存在。
@@ -123,7 +128,7 @@ def user_exist(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
+@auth_permission_required('users.SYSTEM', require_user=False)
 def user_add(request):
     '''  api/user/add POST
     添加用户。
@@ -155,7 +160,7 @@ def user_add(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
+@auth_permission_required('users.SYSTEM', require_user=False)
 def user_edit(request):
     '''  api/user/edit POST
     编辑用户。
@@ -176,7 +181,7 @@ def user_edit(request):
         try:
             user = User.objects.get(username=name)
         except User.DoesNotExist:
-            return gen_response(message='用户不存在', code=202)
+            return gen_response(message=f'欲编辑用户 {name} 不存在', code=202)
         user.set_password(pwd)
         user.department = department
         user.save()
@@ -186,7 +191,7 @@ def user_edit(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-# @auth_permission_required('users.SYSTEM')
+@auth_permission_required('users.SYSTEM', require_user=False)
 def user_lock(request):
     ''' api/user/lock POST
     锁定用户
@@ -207,7 +212,7 @@ def user_lock(request):
             return gen_response(message='admin 必须处于活跃状态', code=203)
         user = User.objects.filter(username=username)
         if not user:
-            return gen_response(message='用户不存在', code=202)
+            return gen_response(message=f'欲锁定用户 {username} 不存在', code=202)
 
         user.update(active=active)
         return gen_response(code=200)
@@ -217,7 +222,7 @@ def user_lock(request):
 def user_login(request):
     '''  api/user/login POST
     用户登录。
-    para: name(str), password(str)
+    para: username(str), password(str)
     return: code =
         201: parameter error
             status =
@@ -265,7 +270,7 @@ def user_logout(request, user):
 
 @auth_permission_required()
 def user_info(request, user):
-    '''  api/user/login POST
+    '''  api/user/info POST
     用户信息。
     return: userInfo = {name(str), role([]), avatar('')}
         status =
@@ -278,5 +283,5 @@ def user_info(request, user):
             "role": user.gen_roles(),
             "avatar": ''
         }
-        return gen_response(status=0, userInfo=info, message=f'{user.username} 获取用户信息')
+        return gen_response(status=0, userInfo=info, message=f'获取用户 {user.username} 信息')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
