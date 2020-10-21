@@ -1,13 +1,9 @@
 '''views for app asset'''
 
-# from django.shortcuts import render
 from datetime import datetime
 from django.core.exceptions import ValidationError
 from app.utils import gen_response, parse_args, parse_list
 from .models import Asset
-
-
-# Create your views here.
 
 
 def asset_list(request):

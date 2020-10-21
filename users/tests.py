@@ -9,6 +9,7 @@ from .models import User
 
 class UserTest(TestCase):
     ''' Test for user app '''
+    login_path = '/api/user/login'
 
     def setUp(self) -> None:
         ''' 构造时添加一项 '''
@@ -18,7 +19,7 @@ class UserTest(TestCase):
         user.save()
 
         add_admin()
-        response = self.client.post('/api/user/login',
+        response = self.client.post(self.login_path,
                                     data=json.dumps({'username': 'admin', 'password': 'admin'}),
                                     content_type='json')
         self.client.cookies['Token'] = response.json()['token']
@@ -132,7 +133,7 @@ class UserTest(TestCase):
         paras['username'] = 'zhanghx'
         response = self.client.post(path, data=json.dumps(paras), content_type='json').json()
         self.assertEqual(response['code'], 200)
-        response = self.client.post('/api/user/login',
+        response = self.client.post(self.login_path,
                                     data=json.dumps({'username': 'zhanghx', 'password': 'zhanghx'}),
                                     content_type='json')
         self.assertEqual(response.json()['status'], 1)
@@ -144,7 +145,7 @@ class UserTest(TestCase):
 
     def test_user_login_logout(self):
         ''' views.user_login '''
-        path = '/api/user/login'
+        path = self.login_path
 
         self.illegal_input(path)
 

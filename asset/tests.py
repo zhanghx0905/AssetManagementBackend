@@ -1,4 +1,6 @@
 '''test for app asset'''
-# from django.test import TestCase
+from django.test import TestCase
 
-# Create your tests here.
+
+class AssetTest(TestCase):
+    ''' Testcases for app asset '''
