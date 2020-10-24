@@ -301,5 +301,6 @@ def user_change_password(request, user: User):
         if not user.check_password(old_pwd):
             return gen_response(message='旧密码错误', code=202)
         user.set_password(new_pwd)
+        user.save()
         return gen_response(code=200, message=f'用户 {user.username} 密码更改')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
