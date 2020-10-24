@@ -182,7 +182,8 @@ def user_edit(request):
             user = User.objects.get(username=name)
         except User.DoesNotExist:
             return gen_response(message=f'欲编辑用户 {name} 不存在', code=202)
-        user.set_password(pwd)
+        if pwd != '':
+            user.set_password(pwd)
         user.department = department
         user.save()
         user.set_roles(roles)
