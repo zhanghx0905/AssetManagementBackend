@@ -2,8 +2,8 @@
 
 from datetime import datetime
 from django.core.exceptions import ValidationError
-from app.utils import gen_response, parse_args, parse_list
-from .models import Asset
+from app.utils import gen_response, parse_args, parse_list, visit_tree
+from .models import Asset, AssetCatagory
 
 
 def asset_list(request):
@@ -111,4 +111,13 @@ def asset_edit(request):
         asset.save()
 
         return gen_response(code=200, message=f'{asset.name} 信息修改')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+def catagory_tree(request):
+    ''' api/asset/catagory GET'''
+    if request.method == 'GET':
+        root = AssetCatagory.objects.first().get_root()
+        res = visit_tree(root)
+        return gen_response(code=200, data=res, message='获取资产分类树')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')

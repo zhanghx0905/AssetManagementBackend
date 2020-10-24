@@ -1,7 +1,7 @@
 '''asset model'''
 
 from django.db import models
-
+from mptt.models import MPTTModel, TreeForeignKey
 # Create your models here.
 
 
@@ -33,3 +33,11 @@ class Asset(models.Model):
     owner = models.CharField(max_length=30, verbose_name='挂账人', default='')
     department = models.CharField(max_length=30, verbose_name='部门', default='')
     start_time = models.DateTimeField(verbose_name='录入时间', null=True)
+
+
+class AssetCatagory(MPTTModel):
+    '''Asset Catagory'''
+    name = models.CharField(max_length=30, verbose_name='资产分类')
+    parent = TreeForeignKey(
+        'self', blank=True, null=True, on_delete=models.CASCADE)
+    

@@ -62,3 +62,15 @@ def parse_list(dic: str, *args, **default_args):
             res.append(val)
         res_list.append(res)
     return res_list
+
+
+def visit_tree(node):
+    '''
+    transform a mptt to dict
+    '''
+    res = {'name': node.name, 'id': node.id, 'children': []}
+    if not node.is_leaf_node():
+        children = node.get_children()
+        for child in children:
+            res['children'].append(visit_tree(child))
+    return res
