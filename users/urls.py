@@ -12,5 +12,6 @@ urlpatterns = [
     path('login', views.user_login),
     path('logout', views.user_logout),
     path('info', views.user_info),
-    path('lock', views.user_lock)
+    path('lock', views.user_lock),
+    path('change-password', views.user_change_password),
 ]
