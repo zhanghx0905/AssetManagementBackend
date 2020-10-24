@@ -285,3 +285,6 @@ def user_info(request, user):
         }
         return gen_response(status=0, userInfo=info, message=f'获取用户 {user.username} 信息')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+

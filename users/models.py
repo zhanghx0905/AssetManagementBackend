@@ -10,6 +10,7 @@ from django.db import models
 from app.settings import SECRET_KEY
 
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     '''
     The password attribute of a User object is a string in this format:
@@ -21,7 +22,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # 状态
     active = models.BooleanField(auto_created=True, default=True)
-    token = models.CharField(max_length=100, auto_created=True, default='', blank=True)
+    token = models.CharField(
+        max_length=100, auto_created=True, default='', blank=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
@@ -60,3 +62,5 @@ class User(AbstractBaseUser, PermissionsMixin):
             ('SYSTEM', '系统管理员'),
             ('IT', 'IT管理员'),
         )
+
+

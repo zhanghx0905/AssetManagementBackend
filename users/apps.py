@@ -16,7 +16,6 @@ def add_admin():
     except OperationalError:
         pass
 
-
 class UsersConfig(AppConfig):
     ''' UsersConfig '''
     name = 'users'
