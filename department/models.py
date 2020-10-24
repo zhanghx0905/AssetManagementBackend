@@ -1,6 +1,8 @@
+'''model definition of department based on mptt'''
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 # Create your models here.
+
 
 class Department(MPTTModel):
     ''' department of an employer'''

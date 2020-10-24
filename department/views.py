@@ -1,17 +1,19 @@
-from django.db import reset_queries
-from django.shortcuts import render
-from .models import Department
+'''views of app department'''
 from app.utils import gen_response
+from .models import Department
 # Create your views here.
 
+
 def tree(request):
+    ''' api/department/tree GET '''
     if request.method == 'GET':
         root = Department.objects.first().get_root()
+
         def visit(node):
             res = {'name': node.name,
-                'id': node.department_id,
-                'children': []
-                }
+                   'id': node.department_id,
+                   'children': []
+                   }
             if not node.is_leaf_node():
                 children = node.get_children()
                 for child in children:
