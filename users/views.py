@@ -2,7 +2,7 @@
 import jwt
 from django.core.exceptions import ValidationError
 
-from app.settings import SECRET_KEY
+from app.settings import SECRET_KEY, DEFAULT_PASSWORD
 from app.utils import gen_response, parse_args
 from .models import User
 
@@ -132,7 +132,7 @@ def user_exist(request):
 def user_add(request):
     '''  api/user/add POST
     添加用户。
-    para: name(str), password(str), department(str), role([...])
+    para: name(str), department(str), role([...])
     return: code =
         200: success
         201: parameter error
@@ -140,15 +140,15 @@ def user_add(request):
     '''
     if request.method == 'POST':
         try:
-            name, pwd, department, roles = parse_args(request.body,
-                                                      'name', 'password', 'department', 'role',
-                                                      department='')
+            name, department, roles = parse_args(request.body,
+                                                 'name', 'department', 'role',
+                                                 department='')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
         user = User(username=name,
                     department=department)
-        user.set_password(pwd)
+        user.set_password(DEFAULT_PASSWORD)
 
         try:
             user.full_clean()
@@ -284,4 +284,22 @@ def user_info(request, user):
             "avatar": ''
         }
         return gen_response(status=0, userInfo=info, message=f'获取用户 {user.username} 信息')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+@auth_permission_required()
+def user_change_password(request, user: User):
+    ''' api/user/change-password POST
+    更改自己的密码。
+    para: oldPassword(str), newPassword(str)
+    '''
+    if request.method == 'POST':
+        try:
+            old_pwd, new_pwd = parse_args(request.body, 'oldPassword', 'newPassword')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+        if not user.check_password(old_pwd):
+            return gen_response(message='旧密码错误', code=202)
+        user.set_password(new_pwd)
+        return gen_response(code=200, message=f'用户 {user.username} 密码更改')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
