@@ -7,17 +7,9 @@ def init_department():
     '''设置初始部门层级'''
     from .models import Department
     try:
-        Department.objects.all().delete()
-        department1 = Department(name='d1', parent=None)
-        department2 = Department(name='d2', parent=department1)
-        department3 = Department(name='d3', parent=department1)
-        department4 = Department(name='d4', parent=department2)
-        department5 = Department(name='d5', parent=department2)
-        department1.save()
-        department2.save()
-        department3.save()
-        department4.save()
-        department5.save()
+        if not Department.objects.filter(name='部门'):
+            top_department = Department(name='部门', parent=None)
+            top_department.save()
     except OperationalError:
         pass
 

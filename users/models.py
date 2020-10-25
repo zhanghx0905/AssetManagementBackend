@@ -8,6 +8,7 @@ from django.contrib.auth.models import (AbstractBaseUser, Permission,
 from django.db import models
 
 from app.settings import SECRET_KEY
+from department.models import Department
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -17,12 +18,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     '''
     # 基本信息
     username = models.CharField(max_length=30, unique=True, verbose_name='用户名')
-    department = models.CharField(max_length=30, default='', verbose_name='部门')
+    department = models.ForeignKey(Department, on_delete=models.CASCADE, verbose_name='部门', null=True, blank=True)
 
     # 状态
     active = models.BooleanField(auto_created=True, default=True)
-    token = models.CharField(
-        max_length=100, auto_created=True, default='', blank=True)
+    token = models.CharField(max_length=100, auto_created=True, default='', blank=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = []
