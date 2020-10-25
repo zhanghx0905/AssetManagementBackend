@@ -3,7 +3,7 @@ import json
 
 from django.test import TestCase
 
-from .apps import add_admin
+from .apps import add_admin, init_department
 from .models import User
 
 
@@ -13,12 +13,16 @@ class UserTest(TestCase):
 
     def setUp(self) -> None:
         ''' 构造时添加一项 '''
+        init_department()
+        add_admin()
+
+        root = User.objects.get(username='admin').department
+        self.department_id = root.id
         user = User(username='zhanghx',
-                    department='thu')
+                    department=root)
         user.set_password('zhanghx')
         user.save()
 
-        add_admin()
         response = self.client.post(self.login_path,
                                     data=json.dumps({'username': 'admin', 'password': 'admin'}),
                                     content_type='json')
@@ -67,7 +71,7 @@ class UserTest(TestCase):
         paras = {
             'name': 'hexiao',
             'password': 'zhanghx',
-            'department': 'thu',
+            'department': self.department_id,
             'role': ['IT', 'ASSET']
         }
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
@@ -104,13 +108,11 @@ class UserTest(TestCase):
         paras = {
             'name': 'admin',
             'password': 'admin',
-            'department': 'thu',
+            'department': self.department_id,
             'role': ['IT', 'ASSET', 'SYSTEM']
         }
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
-        admin = User.objects.get(username='admin')
-        self.assertEqual(admin.department, paras['department'])
 
         paras['name'] = 'noone'
         response = self.client.post(path, data=json.dumps(paras), content_type='json')

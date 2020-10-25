@@ -8,7 +8,6 @@ from department.models import Department
 from .models import User
 
 
-
 def auth_permission_required(*perms, require_user=True):
     '''
     用于用户验证的装饰器
@@ -70,7 +69,7 @@ def user_list(request):
         all_users = User.objects.filter()
         res = [{
             'name': user.username,
-            'department': user.department.name if user.department else '',
+            'department': user.department.name,
             'role': user.gen_roles(),
             'is_active': user.active,
         } for user in all_users]

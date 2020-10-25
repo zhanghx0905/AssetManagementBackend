@@ -2,6 +2,7 @@
 from django.apps import AppConfig
 from django.db.utils import OperationalError
 
+
 def init_department():
     '''设置初始部门层级'''
     from department.models import Department
@@ -11,6 +12,7 @@ def init_department():
             top_department.save()
     except OperationalError:
         pass
+
 
 def add_admin():
     ''' 增加用户名密码均为 admin 的超级用户 '''
@@ -26,6 +28,7 @@ def add_admin():
 
     except OperationalError:
         pass
+
 
 class UsersConfig(AppConfig):
     ''' UsersConfig '''
