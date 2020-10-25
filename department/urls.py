@@ -5,4 +5,5 @@ from . import views
 
 urlpatterns = [
     path('tree', views.tree),
+    path('add', views.add)
 ]
