@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from app.settings import SECRET_KEY, DEFAULT_PASSWORD
 from app.utils import gen_response, parse_args
+from department.models import Department
 from .models import User
 
 
@@ -68,7 +69,8 @@ def user_list(request):
         all_users = User.objects.filter()
         res = [{
             'name': user.username,
-            'department': user.department,
+            'department': user.department.name,
+            'department_id': user.department.id,
             'role': user.gen_roles(),
             'is_active': user.active,
         } for user in all_users]
@@ -140,11 +142,15 @@ def user_add(request):
     '''
     if request.method == 'POST':
         try:
-            name, department, roles = parse_args(request.body,
-                                                 'name', 'department', 'role',
-                                                 department='')
+            name, department_id, roles = parse_args(request.body,
+                                                    'name', 'department', 'role',
+                                                    department='')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
+        try:
+            department = Department.objects.get(id=department_id)
+        except Department.DoesNotExist:
+            department = Department.root()
 
         user = User(username=name,
                     department=department)
@@ -164,7 +170,7 @@ def user_add(request):
 def user_edit(request):
     '''  api/user/edit POST
     编辑用户。
-    para: name(str), password(str), department(str), role([...])
+    para: name(str), password(str), department_id(str), role([...])
     return: code =
         200: success
         201: parameter error
@@ -172,9 +178,9 @@ def user_edit(request):
     '''
     if request.method == 'POST':
         try:
-            name, pwd, department, roles = parse_args(request.body,
-                                                      'name', 'password', 'department', 'role',
-                                                      department='')
+            name, pwd, department_id, roles = parse_args(request.body,
+                                                         'name', 'password', 'department', 'role',
+                                                         department='')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
@@ -184,6 +190,10 @@ def user_edit(request):
             return gen_response(message=f'欲编辑用户 {name} 不存在', code=202)
         if pwd != '':
             user.set_password(pwd)
+        try:
+            department = Department.objects.get(id=department_id)
+        except Department.DoesNotExist:
+            department = Department.root()
         user.department = department
         user.save()
         user.set_roles(roles)
