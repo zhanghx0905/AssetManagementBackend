@@ -4,8 +4,9 @@ from django.core.exceptions import ValidationError
 
 from app.settings import SECRET_KEY, DEFAULT_PASSWORD
 from app.utils import gen_response, parse_args
-from .models import User
 from department.models import Department
+from .models import User
+
 
 
 def auth_permission_required(*perms, require_user=True):

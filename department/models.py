@@ -10,4 +10,5 @@ class Department(MPTTModel):
 
     @classmethod
     def root(cls):
+        ''' return the root of the tree'''
         return cls.objects.first().get_root()
