@@ -40,11 +40,11 @@ def delete(request):
     '''
     if request.method == 'POST':
         try:
-            id = parse_args(request.body, 'id')[0]
+            nid = parse_args(request.body, 'id')[0]
         except KeyError as err:
             return gen_response(code=201, message=str(err))
         try:
-            department = Department.objects.get(id=id)
+            department = Department.objects.get(id=nid)
         except Department.DoesNotExist:
             return gen_response(code=202, message="id 对应部门不存在")
         department.delete()
@@ -60,11 +60,11 @@ def edit(request):
     '''
     if request.method == 'POST':
         try:
-            id, name = parse_args(request.body, 'id', 'name')
+            nid, name = parse_args(request.body, 'id', 'name')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
         try:
-            department = Department.objects.get(id=id)
+            department = Department.objects.get(id=nid)
         except Department.DoesNotExist:
             return gen_response(code=202, message="id 对应部门不存在")
 

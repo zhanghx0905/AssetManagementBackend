@@ -70,6 +70,7 @@ def user_list(request):
         res = [{
             'name': user.username,
             'department': user.department.name,
+            'department_id': user.department.id,
             'role': user.gen_roles(),
             'is_active': user.active,
         } for user in all_users]
