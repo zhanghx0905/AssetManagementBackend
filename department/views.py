@@ -37,12 +37,17 @@ def delete(request):
     para: id(int)
     return: code =
         200: success
+        201: parameter error
+        202: 对应部门不存在
+        203: 顶层部门不能删除
     '''
     if request.method == 'POST':
         try:
             nid = parse_args(request.body, 'id')[0]
         except KeyError as err:
             return gen_response(code=201, message=str(err))
+        if nid == Department.root().id:
+            return gen_response(code=203, message='顶层部门不能删除')
         try:
             department = Department.objects.get(id=nid)
         except Department.DoesNotExist:
