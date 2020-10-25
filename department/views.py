@@ -46,7 +46,7 @@ def delete(request):
             nid = parse_args(request.body, 'id')[0]
         except KeyError as err:
             return gen_response(code=201, message=str(err))
-        if nid == Department.root().id:
+        if int(nid) == Department.root().id:
             return gen_response(code=203, message='顶层部门不能删除')
         try:
             department = Department.objects.get(id=nid)
