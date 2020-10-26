@@ -21,10 +21,9 @@ def add_admin():
     try:    # 防止在数据表创建前调用，引发错误
         root = Department.root()
         if not User.objects.filter(username='admin').exists():
-            admin = User(username='admin', department=root)
+            admin = User(username='admin', department=root, is_superuser=True)
             admin.set_password('admin')
             admin.save()
-            admin.set_roles(['IT', 'ASSET', "SYSTEM"])
 
     except OperationalError:
         pass

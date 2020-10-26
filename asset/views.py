@@ -1,8 +1,8 @@
 '''views for app asset'''
-
-from datetime import datetime
 from django.core.exceptions import ValidationError
+
 from app.utils import gen_response, parse_args, parse_list, visit_tree
+from users.models import User
 from .models import Asset, AssetCatagory
 
 
@@ -11,20 +11,22 @@ def asset_list(request):
     return an asset list for asset manager'''
     if request.method == 'GET':
         all_asset = Asset.objects.all()
-        res = [{
-            'nid': asset.nid,
-            'name': asset.name,
-            'quantity': asset.quantity,
-            'value': asset.value,
-            'is_quantity': asset.is_quantity,
-            'description': asset.description,
-            'parent': asset.parent,
-            'child': asset.child,
-            'status': asset.status,
-            'owner': asset.owner,
-            'department': asset.department,
-            'start_time': asset.start_time.timestamp()
-        }for asset in all_asset]
+        res = []
+        for asset in all_asset:
+            res.append({
+                'nid': asset.id,
+                'name': asset.name,
+                'quantity': asset.quantity,
+                'value': asset.value,
+                'is_quantity': asset.is_quantity,
+                'description': asset.description,
+                'parent': asset.parent,
+                'child': asset.child,
+                'status': asset.status,
+                'owner': asset.owner.username,
+                'department': asset.department.name,
+                'start_time': asset.start_time.timestamp()
+            })
         return gen_response(code=200, data=res, message='获取资产列表')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
@@ -48,21 +50,23 @@ def asset_add(request):
                 'description',
                 'parent',
                 'owner',
-                'department',
                 is_quantity=True,
                 quantity=1,
                 value=1,
                 description='...',
                 parent='',
                 owner='',
-                department='',
             )
 
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
         for pack in pack_list:
-            is_quantity, quantity, value, name, description, parent, owner, department = pack
+            is_quantity, quantity, value, name, description, parent, owner = pack
+            try:
+                owner = User.objects.get(username=owner)
+            except User.DoesNotExist:
+                owner = User.admin()
             asset = Asset(
                 is_quantity=is_quantity,
                 quantity=quantity,
@@ -71,9 +75,7 @@ def asset_add(request):
                 description=description,
                 parent=parent,
                 owner=owner,
-                department=department,
-                status='IDLE',
-                start_time=datetime.now()
+                status='IDLE'
             )
 
             try:
@@ -97,17 +99,22 @@ def asset_edit(request):
     if request.method == 'POST':
         try:
             pack = parse_args(request.body, 'nid', 'name', 'description',
-                              'owner', 'department', 'status', 'quantity', 'value')
+                              'owner', 'status', 'quantity', 'value')
             nid = pack[0]
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
         try:
-            asset = Asset.objects.get(nid=nid)
+            asset = Asset.objects.get(id=nid)
         except Asset.DoesNotExist:
             return gen_response(message='资产不存在', code=202)
-        _, asset.name, asset.description, asset.owner, asset.department, \
-            asset.status, asset.quantity, asset.value = pack
+        _, asset.name, asset.description, owner, asset.status, asset.quantity, asset.value = pack
+        try:
+            owner = User.objects.get(username=owner)
+        except User.DoesNotExist:
+            owner = User.admin()
+        asset.owner = owner
+
         asset.save()
 
         return gen_response(code=200, message=f'{asset.name} 信息修改')
@@ -117,7 +124,7 @@ def asset_edit(request):
 def catagory_tree(request):
     ''' api/asset/catagory GET'''
     if request.method == 'GET':
-        root = AssetCatagory.objects.first().get_root()
+        root = AssetCatagory.root()
         res = visit_tree(root)
         return gen_response(code=200, data=res, message='获取资产分类树')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
