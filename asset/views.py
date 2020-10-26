@@ -34,7 +34,7 @@ def asset_list(request):
 def asset_add(request):
     '''  api/asset/add POST
     资产管理员添加资产，需要提供的条目：
-    ty, quantity, value, name, category, description
+    type_name, quantity, value, name, category, description
     return: code =
         200: success
         201: parameter error
