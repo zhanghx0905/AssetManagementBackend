@@ -183,7 +183,8 @@ def user_edit(request):
                                                          department='')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
-
+        if name == 'admin':
+            return gen_response(code=203, message="admin 的信息不能被修改")
         try:
             user = User.objects.get(username=name)
         except User.DoesNotExist:

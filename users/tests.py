@@ -78,7 +78,7 @@ class UserTest(TestCase):
         self.assertEqual(response.json()['code'], 200)
         self.assertEqual(User.objects.filter(username=paras['name']).count(), 1)
 
-        paras['name'] *= 10
+        paras['name'] *= 100
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 400)
 
@@ -111,6 +111,10 @@ class UserTest(TestCase):
             'department': self.department_id,
             'role': ['IT', 'ASSET', 'SYSTEM']
         }
+        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 203)
+
+        paras['name'] = 'zhanghx'
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
 

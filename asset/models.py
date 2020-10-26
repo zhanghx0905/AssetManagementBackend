@@ -32,7 +32,8 @@ class Asset(models.Model):
     owner = models.ForeignKey(User, verbose_name='挂账人', on_delete=models.SET(User.admin))
 
     history = HistoricalRecords(excluded_fields=['start_time'])
-    changed_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='changed_by_user')
+    changed_by = models.ForeignKey(User, null=True, blank=True,
+                                   on_delete=models.SET_NULL, related_name='changed_by_user')
 
     @property
     def department(self) -> Department:
