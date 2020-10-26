@@ -7,7 +7,7 @@ from .models import Asset
 
 class AssetHistoryAdmin(SimpleHistoryAdmin):
     ''' 将simple_history集成到Django Admin '''
-    list_display = ['name', 'status', 'owner', 'changed_by']
+    list_display = ['name', 'status', 'owner', 'history']
 
 
 admin.site.register(Asset, AssetHistoryAdmin)

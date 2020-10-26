@@ -52,6 +52,12 @@ class RequestLogMiddleware(MiddlewareMixin):
             token = request.COOKIES['Token']
             decoded = jwt.decode(token, verify=False)
             LOCAL.username = decoded['username']
+
+            from users.models import User
+            try:
+                request.user = User.objects.get(username=decoded['username'])
+            except User.DoesNotExist:
+                pass
         except KeyError:
             pass
         except jwt.PyJWTError:

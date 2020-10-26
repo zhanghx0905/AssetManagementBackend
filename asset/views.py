@@ -121,6 +121,43 @@ def asset_edit(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
+HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
+
+
+def asset_history(request):
+    ''' api/asset/history POST
+    para: nid(int)
+    '''
+    if request.method == 'POST':
+        try:
+            nid = parse_args(request.body, 'nid')[0]
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+        try:
+            asset = Asset.objects.get(id=nid)
+        except Asset.DoesNotExist:
+            return gen_response(message='资产不存在', code=202)
+
+        history = asset.history.all()
+        records = []
+
+        for record in history:
+            user = ''
+            if record.history_user is not None:
+                user = record.history_user.username
+
+            record_str = (f"{record.history_date} {HISTORY_OP_TYPE[record.history_type]} "
+                          f"{user}\n")
+            if record.history_type == '~':
+                old_record = record.prev_record
+                delta = record.diff_against(old_record)
+                for change in delta.changes:
+                    record_str += f"\t{change.field} 从 {change.old} 变为 {change.new}\n"
+            records.append(record_str)
+        return gen_response(code=200, data=records, message=f'获取资产 {asset.name} 历史')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
 def catagory_tree(request):
     ''' api/asset/catagory GET'''
     if request.method == 'GET':
