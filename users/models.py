@@ -3,30 +3,24 @@
 from datetime import datetime, timedelta
 
 import jwt
-from django.contrib.auth.models import (AbstractBaseUser, Permission,
-                                        PermissionsMixin)
+from django.contrib.auth.models import (AbstractUser, Permission)
 from django.db import models
 
 from app.settings import SECRET_KEY
 from department.models import Department
 
 
-class User(AbstractBaseUser, PermissionsMixin):
+class User(AbstractUser):
     '''
-    The password attribute of a User object is a string in this format:
-    <algorithm>$<iterations>$<salt>$<hash>
+    User
     '''
     # 基本信息
-    username = models.CharField(max_length=30, unique=True, verbose_name='用户名')
     department = models.ForeignKey(Department, verbose_name='部门',
                                    on_delete=models.SET(Department.root))
 
     # 状态
     active = models.BooleanField(auto_created=True, default=True)
     token = models.CharField(max_length=100, auto_created=True, default='', blank=True)
-
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = []
 
     def generate_jwt_token(self):
         ''' generate token '''

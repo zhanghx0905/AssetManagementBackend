@@ -3,7 +3,7 @@ from app.utils import gen_response, parse_args, visit_tree
 from .models import Department
 
 
-def tree(request):
+def department_tree(request):
     ''' api/department/tree GET '''
     if request.method == 'GET':
         root = Department.objects.first().get_root()
@@ -12,7 +12,7 @@ def tree(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-def add(request):
+def department_add(request):
     ''' api/department/add POST
     para: parent_id(int), name(str)
     return: code =
@@ -32,7 +32,7 @@ def add(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-def delete(request):
+def department_delete(request):
     ''' api/department/delete POST
     para: id(int)
     return: code =
@@ -57,7 +57,7 @@ def delete(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-def edit(request):
+def department_edit(request):
     ''' api/department/edit POST
     para: id(int), name(str)
     return: code =

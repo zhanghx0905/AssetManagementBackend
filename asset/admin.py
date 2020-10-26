@@ -1,6 +1,13 @@
 ''' asset/admin.py '''
 from django.contrib import admin
-from .models import Asset
-# Register your models here.
+from simple_history.admin import SimpleHistoryAdmin
 
-admin.site.register(Asset)
+from .models import Asset
+
+
+class AssetHistoryAdmin(SimpleHistoryAdmin):
+    ''' 将simple_history集成到Django Admin '''
+    list_display = ['name', 'status', 'owner', 'changed_by']
+
+
+admin.site.register(Asset, AssetHistoryAdmin)
