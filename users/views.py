@@ -8,19 +8,15 @@ from department.models import Department
 from .models import User
 
 
-def auth_permission_required(*perms, require_user=True):
+def auth_permission_required(*perms):
     '''
     用于用户验证的装饰器
     该装饰器会验证 cookies 里的 token 是否合法，
-    并将对应用户以参数 user 传给被装饰函数
     错误时返回 status=1, code=401
 
-    如果 require_user=True
-    则被装饰函数必须有 user 这个参数
-
     例:
-    @auth_permission_required(users.IT, users.SYSTEM)
-    def foo(request, user):
+    @auth_permission_required("users.IT", "users.SYSTEM")
+    def foo(request):
         pass
     '''
     def decorator(view_func):
@@ -51,14 +47,13 @@ def auth_permission_required(*perms, require_user=True):
 
             if not user.has_perms(perms):
                 return gen_response(status=1, message='用户权限不足', code=401)
-            if require_user:
-                return view_func(request, user=user, *args, **kwargs)
+
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
 
 
-@auth_permission_required('users.SYSTEM', require_user=False)
+@auth_permission_required('users.SYSTEM')
 def user_list(request):
     ''' api/user/list GET
     返回所有用户的列表。
@@ -79,7 +74,7 @@ def user_list(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required('users.SYSTEM', require_user=False)
+@auth_permission_required('users.SYSTEM')
 def user_delete(request):
     ''' api/user/delete POST
     删除用户。
@@ -107,7 +102,7 @@ def user_delete(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required('users.SYSTEM', require_user=False)
+@auth_permission_required('users.SYSTEM')
 def user_exist(request):
     ''' api/user/exist POST
     用户名是否存在。
@@ -130,7 +125,7 @@ def user_exist(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required('users.SYSTEM', require_user=False)
+@auth_permission_required('users.SYSTEM')
 def user_add(request):
     '''  api/user/add POST
     添加用户。
@@ -166,7 +161,7 @@ def user_add(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required('users.SYSTEM', require_user=False)
+@auth_permission_required('users.SYSTEM')
 def user_edit(request):
     '''  api/user/edit POST
     编辑用户。
@@ -203,7 +198,7 @@ def user_edit(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-@auth_permission_required('users.SYSTEM', require_user=False)
+@auth_permission_required('users.SYSTEM')
 def user_lock(request):
     ''' api/user/lock POST
     锁定用户
@@ -265,7 +260,7 @@ def user_login(request):
 
 
 @auth_permission_required()
-def user_logout(request, user):
+def user_logout(request):
     '''  api/user/login POST
     用户登出。
     return: status =
@@ -273,6 +268,7 @@ def user_logout(request, user):
         1: fall
     '''
     if request.method == 'POST':
+        user = request.user
         user.token = ''
         user.save()
 
@@ -281,7 +277,7 @@ def user_logout(request, user):
 
 
 @auth_permission_required()
-def user_info(request, user):
+def user_info(request):
     '''  api/user/info POST
     用户信息。
     return: userInfo = {name(str), role([]), avatar('')}
@@ -290,6 +286,7 @@ def user_info(request, user):
         1: fall
     '''
     if request.method == 'POST':
+        user = request.user
         info = {
             "name": user.username,
             "role": user.gen_roles(),
@@ -300,12 +297,13 @@ def user_info(request, user):
 
 
 @auth_permission_required()
-def user_change_password(request, user: User):
+def user_change_password(request):
     ''' api/user/change-password POST
     更改自己的密码。
     para: oldPassword(str), newPassword(str)
     '''
     if request.method == 'POST':
+        user = request.user
         try:
             old_pwd, new_pwd = parse_args(request.body, 'oldPassword', 'newPassword')
         except KeyError as err:

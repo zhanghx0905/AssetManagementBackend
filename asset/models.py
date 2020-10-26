@@ -32,8 +32,6 @@ class Asset(models.Model):
     owner = models.ForeignKey(User, verbose_name='挂账人', on_delete=models.SET(User.admin))
 
     history = HistoricalRecords(excluded_fields=['start_time'])
-    changed_by = models.ForeignKey(User, null=True, blank=True,
-                                   on_delete=models.SET_NULL, related_name='changed_by_user')
 
     @property
     def department(self) -> Department:
@@ -44,21 +42,6 @@ class Asset(models.Model):
     def now_value(self) -> int:
         ''' 资产折旧后的价值 '''
         return self.value
-
-    @property
-    def _history_user(self):
-        '''
-        changed_by用来记录上次更改模型的用户，
-        通过_history_user来引用changed_by字段属性
-        '''
-        return self.changed_by
-
-    @_history_user.setter
-    def _history_user(self, value: User):
-        '''
-        _history_user 的 setter
-        '''
-        self.changed_by = value
 
 
 class AssetCatagory(MPTTModel):
