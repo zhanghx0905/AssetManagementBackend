@@ -18,7 +18,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     '''
     # 基本信息
     username = models.CharField(max_length=30, unique=True, verbose_name='用户名')
-    department = models.ForeignKey(Department, on_delete=models.SET(Department.root), verbose_name='部门')
+    department = models.ForeignKey(Department, verbose_name='部门',
+                                   on_delete=models.SET(Department.root))
 
     # 状态
     active = models.BooleanField(auto_created=True, default=True)
@@ -57,6 +58,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @classmethod
     def admin(cls):
+        ''' 返回超级用户 admin '''
         return cls.objects.get(username='admin')
 
     class Meta:

@@ -15,7 +15,7 @@ class Asset(models.Model):
 
     # 这种记录方式很不利于开发，需要改成choices
     is_quantity = models.BooleanField(verbose_name='资产类型', default=False)
-    
+
     description = models.CharField(max_length=150, verbose_name='简介', blank=True, default='')
     parent = models.CharField(max_length=20, verbose_name='父资产', blank=True, default='')
     child = models.CharField(max_length=100, verbose_name='子资产', blank=True, default='')
@@ -48,4 +48,5 @@ class AssetCatagory(MPTTModel):
 
     @classmethod
     def root(cls):
+        ''' 返回顶层类型 '''
         return cls.objects.first().get_root()
