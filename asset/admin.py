@@ -2,7 +2,7 @@
 from django.contrib import admin
 from simple_history.admin import SimpleHistoryAdmin
 
-from .models import Asset
+from .models import Asset, AssetCategory
 
 
 class AssetHistoryAdmin(SimpleHistoryAdmin):
@@ -11,3 +11,4 @@ class AssetHistoryAdmin(SimpleHistoryAdmin):
 
 
 admin.site.register(Asset, AssetHistoryAdmin)
+admin.site.register(AssetCategory)
