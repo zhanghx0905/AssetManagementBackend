@@ -124,22 +124,25 @@ def asset_history(request):
             return gen_response(message='资产不存在', code=202)
 
         history = asset.history.all()
-        records = []
-
+        res = []
         for record in history:
-            user = ''
+            print(type(record.history_date))
+            record_dict = {
+                'user': 'unknown',
+                'time': record.history_date,
+                'type': HISTORY_OP_TYPE[record.history_type],
+                'info': [],
+            }
             if record.history_user is not None:
-                user = record.history_user.username
+                record_dict['user'] = record.history_user.username
 
-            record_str = (f"{record.history_date} {HISTORY_OP_TYPE[record.history_type]} "
-                          f"{user}\n")
             if record.history_type == '~':
                 old_record = record.prev_record
                 delta = record.diff_against(old_record)
                 for change in delta.changes:
-                    record_str += f"\t{change.field} 从 {change.old} 变为 {change.new}\n"
-            records.append(record_str)
-        return gen_response(code=200, data=records, message=f'获取资产 {asset.name} 历史')
+                    record_dict['info'].append(f"{change.field} 从 {change.old} 变为 {change.new}")
+            res.append(record_dict)
+        return gen_response(code=200, data=res, message=f'获取资产 {asset.name} 历史')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
