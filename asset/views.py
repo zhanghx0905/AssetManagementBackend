@@ -143,7 +143,7 @@ def asset_history(request):
                 delta = record.diff_against(old_record)
                 for change in delta.changes:
                     info.append(f"{change.field} 从 {change.old} 变为 {change.new}")
-            record_dict['info'] = '\n'.join(info)
+            record_dict['info'] = info
             res.append(record_dict)
         return gen_response(code=200, data=res, message=f'获取资产 {asset.name} 历史')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
