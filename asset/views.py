@@ -126,7 +126,6 @@ def asset_history(request):
         history = asset.history.all()
         res = []
         for record in history:
-            print(type(record.history_date))
             record_dict = {
                 'user': 'unknown',
                 'time': record.history_date,
