@@ -10,7 +10,7 @@ from department.models import Department
 
 class AssetCategory(MPTTModel):
     '''Asset Category'''
-    name = models.CharField(max_length=30, verbose_name='资产分类')
+    name = models.CharField(max_length=30, unique=True, verbose_name='资产分类')
     parent = TreeForeignKey(
         'self', blank=True, null=True, on_delete=models.CASCADE)
 

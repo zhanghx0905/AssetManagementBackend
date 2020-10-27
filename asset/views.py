@@ -112,6 +112,10 @@ HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
 def asset_history(request):
     ''' api/asset/history POST
     para: nid(int)
+    return: code = ...
+    data = [
+        {time(str), user(str), type(str), info(str)}, ...
+    ]
     '''
     if request.method == 'POST':
         try:
@@ -124,22 +128,24 @@ def asset_history(request):
             return gen_response(message='资产不存在', code=202)
 
         history = asset.history.all()
-        records = []
-
+        res = []
         for record in history:
-            user = ''
+            record_dict = {
+                'user': 'unknown',
+                'time': record.history_date.strftime('%Y-%m-%d %H:%M:%S'),
+                'type': HISTORY_OP_TYPE[record.history_type],
+            }
             if record.history_user is not None:
-                user = record.history_user.username
-
-            record_str = (f"{record.history_date} {HISTORY_OP_TYPE[record.history_type]} "
-                          f"{user}\n")
+                record_dict['user'] = record.history_user.username
+            info = []
             if record.history_type == '~':
                 old_record = record.prev_record
                 delta = record.diff_against(old_record)
                 for change in delta.changes:
-                    record_str += f"\t{change.field} 从 {change.old} 变为 {change.new}\n"
-            records.append(record_str)
-        return gen_response(code=200, data=records, message=f'获取资产 {asset.name} 历史')
+                    info.append(f"{change.field} 从 {change.old} 变为 {change.new}")
+            record_dict['info'] = info
+            res.append(record_dict)
+        return gen_response(code=200, data=res, message=f'获取资产 {asset.name} 历史')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
