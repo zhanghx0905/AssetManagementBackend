@@ -65,7 +65,7 @@ class Asset(models.Model):
     def now_value(self) -> int:
         ''' 资产折旧后的价值 '''
         now = datetime.now()
-        elapsed_year = (now - self.start_time).year
+        elapsed_year = now.year - self.start_time.year
         if elapsed_year >= self.service_life:
             return 0
         depreciation_rate = (self.service_life - elapsed_year) / self.service_life
