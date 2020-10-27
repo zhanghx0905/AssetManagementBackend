@@ -1,4 +1,5 @@
 '''asset model'''
+from datetime import datetime
 
 from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
@@ -53,6 +54,8 @@ class Asset(models.Model):
 
     history = HistoricalRecords(excluded_fields=['start_time'])
 
+    service_life = models.IntegerField(verbose_name='使用年限', default=1)
+
     @property
     def department(self) -> Department:
         ''' 所属部门，即所属用户的部门 '''
@@ -61,4 +64,9 @@ class Asset(models.Model):
     @property
     def now_value(self) -> int:
         ''' 资产折旧后的价值 '''
-        return self.value
+        now = datetime.now()
+        elapsed_year = now.year - self.start_time.year
+        if elapsed_year >= self.service_life:
+            return 0
+        depreciation_rate = (self.service_life - elapsed_year) / self.service_life
+        return self.value * depreciation_rate

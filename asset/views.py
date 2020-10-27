@@ -16,7 +16,7 @@ def asset_list(request):
                 'nid': asset.id,
                 'name': asset.name,
                 'quantity': asset.quantity,
-                'value': asset.value,
+                'value': asset.now_value,
                 'category': asset.category.name,
                 'type_name': asset.type_name,
                 'description': asset.description,
@@ -25,7 +25,8 @@ def asset_list(request):
                 'status': asset.status,
                 'owner': asset.owner.username,
                 'department': asset.department.name,
-                'start_time': asset.start_time.timestamp()
+                'start_time': asset.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'service_life': asset.service_life
             })
         return gen_response(code=200, data=res, message='获取资产列表')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
@@ -50,13 +51,13 @@ def asset_add(request):
                 'name',
                 'category',
                 'description',
-                description='...'
+                'service_life'
             )
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
         for pack in pack_list:
-            type_name, quantity, value, name, category, description = pack
+            type_name, quantity, value, name, category, description, service_life = pack
             try:
                 category = AssetCategory.objects.get(name=category)
             except AssetCategory.DoesNotExist:
@@ -70,7 +71,8 @@ def asset_add(request):
                 category=category,
                 description=description,
                 owner=request.user,
-                status='IDLE'
+                status='IDLE',
+                service_life=service_life
             )
             try:
                 asset.full_clean()
