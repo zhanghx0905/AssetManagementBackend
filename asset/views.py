@@ -38,7 +38,7 @@ def asset_add(request):
     return: code =
         200: success
         201: parameter error
-        400: Validation Error when saving user
+        400: Validation Error when saving asset
     '''
     if request.method == 'POST':
         try:
