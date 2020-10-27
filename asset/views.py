@@ -58,9 +58,8 @@ def asset_add(request):
             type_name, quantity, value, name, category, description = pack
             try:
                 category = AssetCategory.objects.get(name=category)
-            except KeyError as err:
-                # 录入的资产名称不存在，跳过这一条
-                continue
+            except AssetCategory.DoesNotExist:
+                return gen_response(message=f"资产类别 {category} 不存在", code=400)
 
             asset = Asset(
                 type_name=type_name,
@@ -76,7 +75,7 @@ def asset_add(request):
                 asset.full_clean()
                 asset.save()
             except ValidationError as error:
-                return gen_response(message=str(error), code=400)
+                return gen_response(message=str(error).replace('"', "'"), code=400)
         return gen_response(code=200, message=f'添加资产{len(pack_list)}条')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 

@@ -155,7 +155,7 @@ def user_add(request):
             user.full_clean()
             user.save()
         except ValidationError as error:
-            return gen_response(message=str(error), code=400)
+            return gen_response(message=str(error).replace('"', "'"), code=400)
         user.set_roles(roles)
         return gen_response(code=200, message=f'添加用户 {name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
