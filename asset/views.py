@@ -49,7 +49,8 @@ def asset_add(request):
                 'value',
                 'name',
                 'category',
-                'description'
+                'description',
+                description='...'
             )
         except KeyError as err:
             return gen_response(code=201, message=str(err))
@@ -155,4 +156,25 @@ def category_tree(request):
         root = AssetCategory.root()
         res = visit_tree(root)
         return gen_response(code=200, data=res, message='获取资产分类树')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+def asset_require(request):
+    ''' api/asset/require POST
+    param : nid(int)
+    code =  200 success
+            202 no such asset'''
+    if request.method == 'POST':
+        try:
+            nid = parse_args(request.body, 'nid')[0]
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+        try:
+            asset = Asset.objects.get(id=int(nid))
+        except Asset.DoesNotExist:
+            return gen_response(message='资产不存在', code=202)
+        asset.owner = request.user
+        asset.status = 'IN_USE'
+        asset.save()
+        return gen_response(code=200, message=f'{request.user.username}领用资产{asset.name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')

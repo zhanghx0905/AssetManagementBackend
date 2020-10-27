@@ -9,4 +9,5 @@ urlpatterns = [
     path('edit', views.asset_edit),
     path('category', views.category_tree),
     path('history', views.asset_history),
+    path('require', views.asset_require)
 ]
