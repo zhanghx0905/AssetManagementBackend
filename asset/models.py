@@ -31,7 +31,7 @@ class Asset(models.Model):
         AssetCategory, verbose_name='资产分类', on_delete=models.CASCADE, default=None)
     ty_choices = [('ITEM', '价值型'), ('AMOUNT', '数量型')]
     type_name = models.CharField(
-        verbose_name='资产类型', choices=ty_choices, max_length=20, default='IDLE')
+        verbose_name='资产类型', choices=ty_choices, max_length=20, default='ITEM')
 
     description = models.CharField(
         max_length=150, verbose_name='简介', blank=True, default='')
