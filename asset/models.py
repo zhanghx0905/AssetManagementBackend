@@ -51,7 +51,7 @@ class Asset(MPTTModel):
     owner = models.ForeignKey(User, verbose_name='挂账人',
                               on_delete=models.SET(User.admin))
 
-    history = HistoricalRecords(excluded_fields=['start_time'])
+    history = HistoricalRecords(excluded_fields=['start_time', 'lft', 'rght', 'level', 'tree_id'])
 
     @property
     def department(self) -> Department:

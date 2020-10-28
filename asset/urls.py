@@ -10,7 +10,7 @@ urlpatterns = [
     path('history', views.asset_history),
     path('require', views.asset_require),
 
-    path('category/tree', views.category_tree),
+    path('category', views.category_tree),
     path('category/delete', views.category_delete),
     path('category/add', views.category_add),
     path('category/edit', views.category_edit),

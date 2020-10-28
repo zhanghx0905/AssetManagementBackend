@@ -15,6 +15,7 @@ class User(AbstractUser):
     User
     '''
     # 基本信息
+    username = models.CharField(max_length=30, primary_key=True, unique=True, verbose_name='用户名')
     department = models.ForeignKey(Department, verbose_name='部门',
                                    on_delete=models.SET(Department.root))
 

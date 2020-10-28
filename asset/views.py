@@ -21,7 +21,7 @@ def asset_list(request):
                 'type_name': asset.type_name,
                 'description': asset.description,
                 'parent': asset.parent,
-                'child': asset.child,
+                # 'child': asset.child,
                 'status': asset.status,
                 'owner': asset.owner.username,
                 'department': asset.department.name,
