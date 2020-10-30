@@ -1,6 +1,7 @@
 '''views for app asset'''
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from mptt.exceptions import InvalidMove
 
 from app.utils import gen_response, parse_args, parse_list, visit_tree
 from .models import Asset, AssetCategory
@@ -10,7 +11,8 @@ def asset_list(request):
     '''api/asset/list GET
     return an asset list for asset manager'''
     if request.method == 'GET':
-        all_asset = Asset.objects.all()
+        department = request.user.department
+        all_asset = Asset.objects.filter(owner__department=department)
         res = []
         for asset in all_asset:
             res.append({
@@ -22,8 +24,9 @@ def asset_list(request):
                 'category': asset.category.name,
                 'type_name': asset.type_name,
                 'description': asset.description,
-                'parent': asset.parent,
-                # 'child': asset.child,
+                'parent_id': asset.parent_id_,
+                'parent': asset.parent_formated,
+                'children': asset.children_formated,
                 'status': asset.status,
                 'owner': asset.owner.username,
                 'department': asset.department.name,
@@ -47,25 +50,25 @@ def asset_add(request):
         try:
             pack_list = parse_list(
                 request.body,
-                'type_name',
-                'quantity',
-                'value',
-                'name',
-                'category',
-                'description',
-                'service_life',
-                quantity=1, service_life=5, description='', type_name='ITEM'
+                'type_name', 'quantity', 'value',
+                'name', 'category', 'description',
+                'service_life', 'parent_id',
+                type_name='ITEM', quantity=1,
+                description='', service_life=5, parent_id=-1
             )
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
         for pack in pack_list:
-            type_name, quantity, value, name, category, description, service_life = pack
+            type_name, quantity, value, name, category, description, service_life, parent_id = pack
             try:
                 category = AssetCategory.objects.get(name=category)
             except AssetCategory.DoesNotExist:
                 return gen_response(message=f"资产类别 {category} 不存在", code=400)
-
+            try:
+                parent = Asset.objects.get(id=parent_id)
+            except Asset.DoesNotExist:
+                parent = None
             asset = Asset(
                 type_name=type_name,
                 quantity=quantity,
@@ -75,7 +78,8 @@ def asset_add(request):
                 description=description,
                 owner=request.user,
                 status='IDLE',
-                service_life=service_life
+                service_life=service_life,
+                parent=parent
             )
             try:
                 asset.full_clean()
@@ -97,17 +101,25 @@ def asset_edit(request):
     '''
     if request.method == 'POST':
         try:
-            nid, name, description = parse_args(
-                request.body, 'nid', 'name', 'description')
+            nid, name, description, parent_id = parse_args(
+                request.body, 'nid', 'name', 'description', 'parent_id', parent_id=-1)
         except KeyError as err:
             return gen_response(code=201, message=str(err))
         try:
             asset = Asset.objects.get(id=nid)
         except Asset.DoesNotExist:
             return gen_response(message='资产不存在', code=202)
-        asset.name = name
+        try:
+            parent = Asset.objects.get(id=parent_id)
+        except Asset.DoesNotExist:
+            parent = None
+
+        asset.name, asset.parent = name, parent
         asset.description = description
-        asset.save()
+        try:
+            asset.save()
+        except InvalidMove:
+            return gen_response(code=203, message='无法指定自己成为自己的父资产')
         return gen_response(code=200, message=f'{asset.name} 信息修改')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
@@ -148,7 +160,8 @@ def asset_history(request):
                 old_record = record.prev_record
                 delta = record.diff_against(old_record)
                 for change in delta.changes:
-                    info.append(f"{change.field} 从 {change.old} 变为 {change.new}")
+                    info.append(
+                        f"{change.field} 从 {change.old} 变为 {change.new}")
             record_dict['info'] = info
             res.append(record_dict)
         return gen_response(code=200, data=res, message=f'获取资产 {asset.name} 历史')
@@ -193,7 +206,8 @@ def category_add(request):
     '''
     if request.method == 'POST':
         try:
-            parent_id, category_name = parse_args(request.body, 'parent_id', 'name')
+            parent_id, category_name = parse_args(
+                request.body, 'parent_id', 'name')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
         try:
@@ -250,6 +264,9 @@ def category_edit(request):
             return gen_response(code=202, message="id 对应资产类别不存在")
 
         old_name, category.name = category.name, name
-        category.save()
+        try:
+            category.save()
+        except IntegrityError:
+            return gen_response(code=203, message="类型名不能重复")
         return gen_response(code=200, message=f'修改资产类别名 {old_name} -> {name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')

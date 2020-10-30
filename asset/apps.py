@@ -1,6 +1,6 @@
 '''asset/app.py'''
 from django.apps import AppConfig
-from django.db.utils import OperationalError
+from django.db.utils import OperationalError, IntegrityError
 
 
 def init_category():
@@ -22,6 +22,8 @@ def init_category():
             for cate in (c_1, c_11, c_12, c_13, c_2, c_21, c_22, c_3):
                 cate.save()
     except OperationalError:
+        pass
+    except IntegrityError:
         pass
 
 
