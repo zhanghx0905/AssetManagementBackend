@@ -1,6 +1,7 @@
 '''views for app asset'''
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
+from mptt.exceptions import InvalidMove
 
 from app.utils import gen_response, parse_args, parse_list, visit_tree
 from .models import Asset, AssetCategory
@@ -22,8 +23,8 @@ def asset_list(request):
                 'category': asset.category.name,
                 'type_name': asset.type_name,
                 'description': asset.description,
-                'parent': asset.parent_str,
-                'child': '',
+                'parent': asset.parent_formated,
+                'children': asset.children_formated,
                 'status': asset.status,
                 'owner': asset.owner.username,
                 'department': asset.department.name,
@@ -98,17 +99,25 @@ def asset_edit(request):
     '''
     if request.method == 'POST':
         try:
-            nid, name, description = parse_args(
-                request.body, 'nid', 'name', 'description')
+            nid, name, description, parent_id = parse_args(
+                request.body, 'nid', 'name', 'description', 'parent_id', parent_id=-1)
         except KeyError as err:
             return gen_response(code=201, message=str(err))
         try:
             asset = Asset.objects.get(id=nid)
         except Asset.DoesNotExist:
             return gen_response(message='资产不存在', code=202)
-        asset.name = name
+        try:
+            parent = Asset.objects.get(id=parent_id)
+        except Asset.DoesNotExist:
+            parent = None
+
+        asset.name, asset.parent = name, parent
         asset.description = description
-        asset.save()
+        try:
+            asset.save()
+        except InvalidMove:
+            return gen_response(code=203, message='无法指定自己成为自己的父资产')
         return gen_response(code=200, message=f'{asset.name} 信息修改')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
@@ -251,6 +260,9 @@ def category_edit(request):
             return gen_response(code=202, message="id 对应资产类别不存在")
 
         old_name, category.name = category.name, name
-        category.save()
+        try:
+            category.save()
+        except IntegrityError:
+            return gen_response(code=203, message="类型名不能重复")
         return gen_response(code=200, message=f'修改资产类别名 {old_name} -> {name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
