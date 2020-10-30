@@ -1,5 +1,6 @@
 '''views for app asset'''
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 from app.utils import gen_response, parse_args, parse_list, visit_tree
 from .models import Asset, AssetCategory
@@ -22,7 +23,7 @@ def asset_list(request):
                 'type_name': asset.type_name,
                 'description': asset.description,
                 'parent': asset.parent,
-                'child': asset.child,
+                # 'child': asset.child,
                 'status': asset.status,
                 'owner': asset.owner.username,
                 'department': asset.department.name,
@@ -52,7 +53,8 @@ def asset_add(request):
                 'name',
                 'category',
                 'description',
-                'service_life'
+                'service_life',
+                quantity=1, service_life=5, description='', type_name='ITEM'
             )
         except KeyError as err:
             return gen_response(code=201, message=str(err))
@@ -153,15 +155,6 @@ def asset_history(request):
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
 
-def category_tree(request):
-    ''' api/asset/category GET'''
-    if request.method == 'GET':
-        root = AssetCategory.root()
-        res = visit_tree(root)
-        return gen_response(code=200, data=res, message='获取资产分类树')
-    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
-
-
 def asset_require(request):
     ''' api/asset/require POST
     param : nid(int)
@@ -179,5 +172,84 @@ def asset_require(request):
         asset.owner = request.user
         asset.status = 'IN_USE'
         asset.save()
-        return gen_response(code=200, message=f'{request.user.username}领用资产{asset.name}')
+        return gen_response(code=200, message=f'{request.user.username} 领用资产 {asset.name}')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+def category_tree(request):
+    ''' api/asset/category/tree GET'''
+    if request.method == 'GET':
+        root = AssetCategory.root()
+        res = visit_tree(root)
+        return gen_response(code=200, data=res, message='获取资产分类树')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+def category_add(request):
+    ''' api/asset/category/add POST
+    para: parent_id(int), name(str)
+    return: code =
+        200: success
+    '''
+    if request.method == 'POST':
+        try:
+            parent_id, category_name = parse_args(request.body, 'parent_id', 'name')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+        try:
+            parent = AssetCategory.objects.get(id=parent_id)
+        except AssetCategory.DoesNotExist:
+            return gen_response(code=202, message="id 对应父类别不存在")
+        try:
+            AssetCategory.objects.create(name=category_name, parent=parent)
+        except IntegrityError:
+            return gen_response(code=203, message="类型名不能重复")
+        return gen_response(code=200, message=f'添加资产类别 {category_name}')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+def category_delete(request):
+    ''' api/asset/category/delete POST
+    para: id(int)
+    return: code =
+        200: success
+        201: parameter error
+        202: 对应部门不存在
+        203: 顶层部门不能删除
+    '''
+    if request.method == 'POST':
+        try:
+            category_id = parse_args(request.body, 'id')[0]
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+        if int(category_id) == AssetCategory.root().id:
+            return gen_response(code=203, message='顶级资产类型不能删除')
+        try:
+            category = AssetCategory.objects.get(id=category_id)
+        except AssetCategory.DoesNotExist:
+            return gen_response(code=202, message="id 对应资产类别不存在")
+        category.delete()
+        return gen_response(code=200, message=f'删除资产类别 {category.name}')
+    return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
+
+
+def category_edit(request):
+    ''' api/asset/category/edit POST
+    para: id(int), name(str)
+    return: code =
+        200: success
+    '''
+    if request.method == 'POST':
+        try:
+            category_id, name = parse_args(request.body, 'id', 'name')
+        except KeyError as err:
+            return gen_response(code=201, message=str(err))
+        try:
+            category = AssetCategory.objects.get(id=category_id)
+        except AssetCategory.DoesNotExist:
+            return gen_response(code=202, message="id 对应资产类别不存在")
+
+        old_name, category.name = category.name, name
+        category.save()
+        return gen_response(code=200, message=f'修改资产类别名 {old_name} -> {name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
