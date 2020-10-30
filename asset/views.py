@@ -52,7 +52,8 @@ def asset_add(request):
                 'name',
                 'category',
                 'description',
-                'service_life'
+                'service_life',
+                quantity=1, service_life=5, description='', type_name='ITEM'
             )
         except KeyError as err:
             return gen_response(code=201, message=str(err))
