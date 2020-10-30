@@ -23,7 +23,7 @@ def asset_list(request):
                 'category': asset.category.name,
                 'type_name': asset.type_name,
                 'description': asset.description,
-                'parent_id': asset.parent_id,
+                'parent_id': asset.parent_id_,
                 'parent': asset.parent_formated,
                 'children': asset.children_formated,
                 'status': asset.status,

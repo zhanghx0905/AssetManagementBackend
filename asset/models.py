@@ -69,7 +69,7 @@ class Asset(MPTTModel):
         return self.value * depreciation_rate
 
     @property
-    def parent_id(self):
+    def parent_id_(self):
         ''' 返回父资产 id '''
         if self.parent is None:
             return ''
