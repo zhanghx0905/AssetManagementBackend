@@ -22,8 +22,8 @@ def asset_list(request):
                 'category': asset.category.name,
                 'type_name': asset.type_name,
                 'description': asset.description,
-                'parent': asset.parent,
-                # 'child': asset.child,
+                'parent': asset.parent_str,
+                'child': '',
                 'status': asset.status,
                 'owner': asset.owner.username,
                 'department': asset.department.name,
@@ -47,25 +47,25 @@ def asset_add(request):
         try:
             pack_list = parse_list(
                 request.body,
-                'type_name',
-                'quantity',
-                'value',
-                'name',
-                'category',
-                'description',
-                'service_life',
-                quantity=1, service_life=5, description='', type_name='ITEM'
+                'type_name', 'quantity', 'value',
+                'name', 'category', 'description',
+                'service_life', 'parent_id',
+                type_name='ITEM', quantity=1,
+                description='', service_life=5, parent_id=-1
             )
         except KeyError as err:
             return gen_response(code=201, message=str(err))
 
         for pack in pack_list:
-            type_name, quantity, value, name, category, description, service_life = pack
+            type_name, quantity, value, name, category, description, service_life, parent_id = pack
             try:
                 category = AssetCategory.objects.get(name=category)
             except AssetCategory.DoesNotExist:
                 return gen_response(message=f"资产类别 {category} 不存在", code=400)
-
+            try:
+                parent = Asset.objects.get(id=parent_id)
+            except Asset.DoesNotExist:
+                parent = None
             asset = Asset(
                 type_name=type_name,
                 quantity=quantity,
@@ -75,7 +75,8 @@ def asset_add(request):
                 description=description,
                 owner=request.user,
                 status='IDLE',
-                service_life=service_life
+                service_life=service_life,
+                parent=parent
             )
             try:
                 asset.full_clean()

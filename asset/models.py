@@ -21,24 +21,22 @@ class AssetCategory(MPTTModel):
         return cls.objects.first().get_root()
 
 
-class Asset(models.Model):
+class Asset(MPTTModel):
     ''' asset model '''
     name = models.CharField(max_length=30, null=False, verbose_name='资产名称')
     quantity = models.IntegerField(verbose_name='数量', default=1)
-    value = models.IntegerField(verbose_name='资产价值', default=1)
+    value = models.IntegerField(verbose_name='价值', default=1)
 
-    category = models.ForeignKey(
-        AssetCategory, verbose_name='资产分类', on_delete=models.CASCADE, default=None)
+    category = models.ForeignKey(AssetCategory, verbose_name='类别',
+                                 on_delete=models.CASCADE, default=None)
     ty_choices = [('ITEM', '价值型'), ('AMOUNT', '数量型')]
-    type_name = models.CharField(
-        verbose_name='资产类型', choices=ty_choices, max_length=20, default='ITEM')
+    type_name = models.CharField(verbose_name='资产类型', choices=ty_choices,
+                                 max_length=20, default='ITEM')
 
-    description = models.CharField(
-        max_length=150, verbose_name='简介', blank=True, default='')
-    parent = models.CharField(
-        max_length=20, verbose_name='父资产', blank=True, default='')
-    child = models.CharField(
-        max_length=100, verbose_name='子资产', blank=True, default='')
+    description = models.CharField(max_length=150, verbose_name='简介',
+                                   blank=True, default='')
+    parent = TreeForeignKey('self', blank=True, null=True,
+                            on_delete=models.SET_NULL, verbose_name='父资产')
 
     status_choices = [('IDLE', '闲置'),
                       ('IN_USE', '使用'),
@@ -46,15 +44,14 @@ class Asset(models.Model):
                       ('RETIRED', '清退'),
                       ('DELETED', '删除')]
 
-    status = models.CharField(
-        max_length=20, choices=status_choices, default='IDLE')
+    status = models.CharField(max_length=20, choices=status_choices, default='IDLE')
     start_time = models.DateTimeField(verbose_name='录入时间', auto_now_add=True)
+    service_life = models.IntegerField(verbose_name='使用年限', default=1)
+
     owner = models.ForeignKey(User, verbose_name='挂账人',
                               on_delete=models.SET(User.admin))
 
-    history = HistoricalRecords(excluded_fields=['start_time'])
-
-    service_life = models.IntegerField(verbose_name='使用年限', default=1)
+    history = HistoricalRecords(excluded_fields=['start_time', 'lft', 'rght', 'level', 'tree_id'])
 
     @property
     def department(self) -> Department:
@@ -70,3 +67,10 @@ class Asset(models.Model):
             return 0
         depreciation_rate = (self.service_life - elapsed_year) / self.service_life
         return self.value * depreciation_rate
+
+    @property
+    def parent_str(self) -> str:
+        ''' 父资产 格式化为 资产名(资产id)'''
+        if self.parent is None:
+            return ''
+        return f'{self.parent.name}({self.parent.id})'
