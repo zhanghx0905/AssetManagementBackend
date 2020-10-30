@@ -11,7 +11,8 @@ def asset_list(request):
     '''api/asset/list GET
     return an asset list for asset manager'''
     if request.method == 'GET':
-        all_asset = Asset.objects.all()
+        department = request.user.department
+        all_asset = Asset.objects.filter(department=department)
         res = []
         for asset in all_asset:
             res.append({
