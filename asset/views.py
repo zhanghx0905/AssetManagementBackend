@@ -1,5 +1,6 @@
 '''views for app asset'''
 from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 
 from app.utils import gen_response, parse_args, parse_list, visit_tree
 from .models import Asset, AssetCategory
@@ -197,7 +198,10 @@ def category_add(request):
             parent = AssetCategory.objects.get(id=parent_id)
         except AssetCategory.DoesNotExist:
             return gen_response(code=202, message="id 对应父类别不存在")
-        AssetCategory.objects.create(name=category_name, parent=parent)
+        try:
+            AssetCategory.objects.create(name=category_name, parent=parent)
+        except IntegrityError:
+            return gen_response(code=203, message="类型名不能重复")
         return gen_response(code=200, message=f'添加资产类别 {category_name}')
     return gen_response(code=405, message=f'Http 方法 {request.method} 是不被允许的')
 
