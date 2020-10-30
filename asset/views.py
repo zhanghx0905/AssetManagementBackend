@@ -12,7 +12,7 @@ def asset_list(request):
     return an asset list for asset manager'''
     if request.method == 'GET':
         department = request.user.department
-        all_asset = Asset.objects.filter(department=department)
+        all_asset = Asset.objects.filter(owner__department=department)
         res = []
         for asset in all_asset:
             res.append({
@@ -160,7 +160,8 @@ def asset_history(request):
                 old_record = record.prev_record
                 delta = record.diff_against(old_record)
                 for change in delta.changes:
-                    info.append(f"{change.field} 从 {change.old} 变为 {change.new}")
+                    info.append(
+                        f"{change.field} 从 {change.old} 变为 {change.new}")
             record_dict['info'] = info
             res.append(record_dict)
         return gen_response(code=200, data=res, message=f'获取资产 {asset.name} 历史')
@@ -205,7 +206,8 @@ def category_add(request):
     '''
     if request.method == 'POST':
         try:
-            parent_id, category_name = parse_args(request.body, 'parent_id', 'name')
+            parent_id, category_name = parse_args(
+                request.body, 'parent_id', 'name')
         except KeyError as err:
             return gen_response(code=201, message=str(err))
         try:
