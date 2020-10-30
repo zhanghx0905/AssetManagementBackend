@@ -18,22 +18,10 @@ pip install -r requirements_dev.txt
 * __requirements.txt__ Package manager with `pip`.
 * __requirements_dev.txt__ Package manager with `pip`, including extra tools for development.
 
-### 附：本地检查代码覆盖率
+### 附：本地检查是否能通过测试
 
-`.coveragerc` 文件：
-
-```
-[run]
-branch = True
-source = app,users
-[report]
-show_missing = True
-```
-
-命令行执行：
-
-```
-coverage run manage.py test
-coverage report
+```shell
+pylint --load-plugins=pylint_django app users asset department
+python manage.py test
 ```
 
