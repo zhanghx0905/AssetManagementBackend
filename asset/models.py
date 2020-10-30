@@ -92,7 +92,7 @@ class Asset(MPTTModel):
     def children_formated(self):
         ''' 格式化的子资产 '''
         children = self.children
-        if not len(children):
+        if not children.exists():
             return '无'
         res = [f"{child.name}({child.id})" for child in children]
         return ','.join(res)
