@@ -25,3 +25,21 @@ pylint --load-plugins=pylint_django app users asset department
 python manage.py test
 ```
 
+### 附：本地检查测试覆盖率
+
+`.coveragerc` 文件：
+
+```
+[run]
+branch = True
+source = app,users,asset,departments
+[report]
+show_missing = True
+```
+
+命令行执行：
+
+```
+coverage run manage.py test
+coverage report
+```

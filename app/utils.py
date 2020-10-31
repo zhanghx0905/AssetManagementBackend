@@ -1,7 +1,9 @@
 ''' app/utils Project 级别的 utils 函数 '''
 import json
 import logging
+from functools import partial
 
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http.response import JsonResponse
 
 LOGGER = logging.getLogger('web.log')
@@ -74,3 +76,37 @@ def visit_tree(node):
         for child in children:
             res['children'].append(visit_tree(child))
     return res
+
+
+def catch_exception(*valid_http_methods):
+    '''
+    用装饰器捕获一些常见的异常并处理，降低异常处理代码量
+
+    捕获的错误包括:
+        - Http 方法错误
+        - POST 请求体参数错误
+        - 数据库对应表项不存在错误
+        - 数据库表项格式错误
+
+    例:
+    @catch_exception('GET')
+    def fun(request):
+        pass
+    '''
+    error_response = partial(gen_response, status=1)
+
+    def decorator(func):
+        def inner(request, *args, **kwargs):
+            if request.method not in valid_http_methods:
+                return error_response(message=f'Http 方法 {request.method} 是不被允许的', code=405)
+            try:
+                response = func(request, *args, **kwargs)
+            except KeyError as err:   # POST 请求体错误
+                return error_response(message=str(err), code=201)
+            except ObjectDoesNotExist as err:   # 数据库对应表项不存在错误
+                return error_response(message=str(err), code=202)
+            except ValidationError as err:  # 数据库格式错误
+                return error_response(message=str(err).replace('"', "'"), code=400)
+            return response
+        return inner
+    return decorator
