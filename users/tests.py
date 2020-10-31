@@ -3,7 +3,7 @@ import json
 
 from django.test import TestCase
 
-from .apps import add_admin, init_department
+from app.utils import init_test
 from .models import User
 
 
@@ -12,9 +12,8 @@ class UserTest(TestCase):
     login_path = '/api/user/login'
 
     def setUp(self) -> None:
-        ''' 构造时添加一项 '''
-        init_department()
-        add_admin()
+        ''' 构造时添加一项用户 '''
+        init_test(self)
 
         root = User.objects.get(username='admin').department
         self.department_id = root.id
@@ -22,19 +21,6 @@ class UserTest(TestCase):
                     department=root)
         user.set_password('zhanghx')
         user.save()
-
-        response = self.client.post(self.login_path,
-                                    data=json.dumps({'username': 'admin', 'password': 'admin'}),
-                                    content_type='json')
-        self.client.cookies['Token'] = response.json()['token']
-
-    def illegal_input(self, path: str):
-        ''' 对于只接受POST方法的api 测试不合法的输入 '''
-        response = self.client.get(path)
-        self.assertEqual(response.json()['code'], 405)
-
-        response = self.client.post(path)
-        self.assertEqual(response.json()['code'], 201)
 
     def test_user_list(self):
         ''' views.user_list '''
@@ -46,7 +32,11 @@ class UserTest(TestCase):
         ''' views.user_exist '''
         path = '/api/user/exist'
 
-        self.illegal_input(path)
+        response = self.client.get(path)
+        self.assertEqual(response.json()['code'], 405)
+
+        response = self.client.post(path)
+        self.assertEqual(response.json()['code'], 201)
 
         response = self.client.post(path,
                                     data=json.dumps({'name': 'admin'}),
@@ -93,8 +83,6 @@ class UserTest(TestCase):
     def test_user_edit(self):
         ''' views.user_edit '''
         path = '/api/user/edit'
-
-        self.illegal_input(path)
 
         paras = {
             'name': 'admin',
