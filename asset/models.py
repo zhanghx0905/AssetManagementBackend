@@ -121,6 +121,7 @@ class AssetCustomAttr(models.Model):
 
     @classmethod
     def get_custom_attr(cls, asset, key) -> str:
+        ''' 得到asset的某个自定义属性key的值 '''
         try:
             val = cls.objects.get(key__name=key, asset=asset).value
         except cls.DoesNotExist:
