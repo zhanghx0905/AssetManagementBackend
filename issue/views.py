@@ -13,6 +13,7 @@ def get_issues_list(issues):
             'nid': issue.id,
             'initiator': issue.initiator.username,
             'asset': f'{issue.asset.name}({issue.asset.id})',
+            'type_name': issue.type_name,
             'assignee': issue.assignee_name
         })
     return res
@@ -41,6 +42,6 @@ def require(request):
         initiator=request.user,
         handler=manager,
         asset=asset,
-        type_name='ACQUIRE',
+        type_name='REQUIRE',
     )
     return gen_response(code=200, message=f'{request.user.username} 请求领用资产 {asset.name}')
