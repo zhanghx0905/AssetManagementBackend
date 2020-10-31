@@ -105,3 +105,4 @@ class Asset(MPTTModel):
             for user in users:  # 随机找一个资产管理员
                 if user.has_perm('user.ASSET'):
                     return user
+        return User.admin()
