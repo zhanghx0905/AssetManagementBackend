@@ -3,7 +3,7 @@ import json
 
 from django.test import TestCase
 
-from .apps import add_admin, init_department
+from app.utils import init_test
 from .models import User
 
 
@@ -12,9 +12,8 @@ class UserTest(TestCase):
     login_path = '/api/user/login'
 
     def setUp(self) -> None:
-        ''' 构造时添加一项 '''
-        init_department()
-        add_admin()
+        ''' 构造时添加一项用户 '''
+        init_test(self)
 
         root = User.objects.get(username='admin').department
         self.department_id = root.id
@@ -22,19 +21,6 @@ class UserTest(TestCase):
                     department=root)
         user.set_password('zhanghx')
         user.save()
-
-        response = self.client.post(self.login_path,
-                                    data=json.dumps({'username': 'admin', 'password': 'admin'}),
-                                    content_type='json')
-        self.client.cookies['Token'] = response.json()['token']
-
-    def illegal_input(self, path: str):
-        ''' 对于只接受POST方法的api 测试不合法的输入 '''
-        response = self.client.get(path)
-        self.assertEqual(response.json()['code'], 405)
-
-        response = self.client.post(path)
-        self.assertEqual(response.json()['code'], 201)
 
     def test_user_list(self):
         ''' views.user_list '''
@@ -46,7 +32,11 @@ class UserTest(TestCase):
         ''' views.user_exist '''
         path = '/api/user/exist'
 
-        self.illegal_input(path)
+        response = self.client.get(path)
+        self.assertEqual(response.json()['code'], 405)
+
+        response = self.client.post(path)
+        self.assertEqual(response.json()['code'], 201)
 
         response = self.client.post(path,
                                     data=json.dumps({'name': 'admin'}),
@@ -72,12 +62,14 @@ class UserTest(TestCase):
         self.assertEqual(User.objects.filter(username=paras['name']).count(), 1)
 
         paras['name'] *= 100
+        paras['department'] = -1
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 400)
 
         path = '/api/user/delete'
 
         paras['name'] = 'hexiao'
+        paras['department'] = self.department_id
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
         self.assertEqual(User.objects.filter(username=paras['name']).count(), 0)
@@ -94,8 +86,6 @@ class UserTest(TestCase):
         ''' views.user_edit '''
         path = '/api/user/edit'
 
-        self.illegal_input(path)
-
         paras = {
             'name': 'admin',
             'password': 'admin',
@@ -110,6 +100,7 @@ class UserTest(TestCase):
         self.assertEqual(response.json()['code'], 200)
 
         paras['password'] = ''
+        paras['department'] = -1
         self.client.post(path, data=json.dumps(paras), content_type='json')
 
     def test_user_lock(self):
@@ -173,3 +164,45 @@ class UserTest(TestCase):
         response = self.client.post(path).json()
         self.assertFalse(response['status'])
         self.assertEqual(response['userInfo']['name'], 'admin')
+
+    def test_change_password(self):
+        ''' test for change_password '''
+        path = '/api/user/change-password'
+
+        paras = {
+            'oldPassword': 'admin',
+            'newPassword': 'admin'
+        }
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
+        paras['oldPassword'] = 'wrong'
+        response = self.client.post(path, json.dumps(paras), content_type='json')
+        self.assertEqual(response.json()['code'], 202)
+
+    def test_verify_jwt(self):
+        ''' test for utils.user_verified '''
+        from datetime import datetime, timedelta
+
+        from jwt import encode
+
+        from .utils import user_verified
+        from app.settings import SECRET_KEY
+
+        user_verified({}, [])
+        user_verified({'Token': 1}, [])
+
+        username = 'zhanghx'
+        token = encode({
+            'iat': datetime.utcnow(),
+            'exp': datetime.utcnow() - timedelta(days=1),   # issued at
+            'username': username
+        }, SECRET_KEY, algorithm='HS256')
+        user_verified({'Token': token}, [])  # Token 过期
+        token = encode({
+            'iat': datetime.utcnow(),
+            'exp': datetime.utcnow() + timedelta(days=1),   # issued at
+            'username': username
+        }, SECRET_KEY, algorithm='HS256')
+        res = user_verified({'Token': token}, [])  # 用户不在线
+        self.assertEqual(res, '用户不在线')

@@ -1,10 +1,14 @@
-''' app/utils Project 级别的 utils 函数 '''
+'''
+app/utils Project 级别的 utils 函数
+本文件下的函数一般不用特别测试
+'''
 import json
 import logging
 from functools import partial
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http.response import JsonResponse
+from django.test.testcases import TestCase
 
 LOGGER = logging.getLogger('web.log')
 
@@ -12,7 +16,10 @@ LOGGER = logging.getLogger('web.log')
 def gen_response(**data):
     ''' gerenate json response, at response.data '''
     if 'message' in data:
-        LOGGER.info(data['message'])
+        if 'code' in data and data['code'] != 200:
+            LOGGER.warning(data['message'])
+        else:
+            LOGGER.info(data['message'])
     return JsonResponse(data)
 
 
@@ -110,3 +117,15 @@ def catch_exception(*valid_http_methods):
             return response
         return inner
     return decorator
+
+
+def init_test(test: TestCase):
+    ''' 在测试模块的setUp函数中调用，
+    以初始化资源并登录admin '''
+    from users.apps import init_department, add_admin
+    init_department()
+    add_admin()
+    response = test.client.post('/api/user/login',
+                                data=json.dumps({'username': 'admin', 'password': 'admin'}),
+                                content_type='json')
+    test.client.cookies['Token'] = response.json()['token']

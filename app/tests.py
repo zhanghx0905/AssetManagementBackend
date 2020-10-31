@@ -3,11 +3,15 @@ import json
 
 from django.test import TestCase
 
-from app.utils import gen_response, parse_args
+from app.utils import init_test
 
 
 class AppTests(TestCase):
     ''' Test cases for project app '''
+
+    def setUp(self) -> None:
+        ''' 添加并登录admin '''
+        init_test(self)
 
     def test_get_logs(self):
         ''' views.get_logs '''
@@ -24,23 +28,6 @@ class AppTests(TestCase):
         response = self.client.post(path, json.dumps(
             {'offset': 1, 'size': 1}), content_type='json')
         self.assertEqual(response.json()['code'], 200)
-
-    def test_parse_args(self):
-        ''' utils.parse_args '''
-        res = parse_args(json.dumps({'name': 'zhang'}), 'name')
-        self.assertEqual(res[0], 'zhang')
-
-        res = parse_args('', 'name', name='zhang')
-        self.assertEqual(res[0], 'zhang')
-
-        with self.assertRaises(KeyError):
-            parse_args('', 'name')
-
-    def test_gen_response(self):
-        ''' utils.gen_response '''
-        response = gen_response(name='zhang')
-        response_para = json.loads(str(response.content, encoding='utf8'))
-        self.assertEqual(response_para['name'], 'zhang')
 
     def test_wsgi(self):
         ''' wsgi '''
