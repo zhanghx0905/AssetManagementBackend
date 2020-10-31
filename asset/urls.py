@@ -9,6 +9,7 @@ urlpatterns = [
     path('edit', views.asset_edit),
     path('history', views.asset_history),
     path('require', views.asset_require),
+    path('query', views.asset_query),
 
     path('category/tree', views.category_tree),
     path('category/delete', views.category_delete),
