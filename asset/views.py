@@ -107,6 +107,17 @@ def asset_history(request):
     return gen_response(code=200, data=res, message=f'获取资产 {asset.name} 历史')
 
 
+@catch_exception('GET')
+def asset_available_list(request):
+    '''api/asset/available GET
+    返回可以领用(IDLE)的资产
+    '''
+    department = request.user.department
+    all_assets = Asset.objects.filter(owner__department=department, status='IDLE')
+    res = get_assets_list(all_assets)
+    return gen_response(code=200, data=res, message='获取可领用资产列表')
+
+
 @catch_exception('POST')
 def asset_require(request):
     ''' api/asset/require POST
