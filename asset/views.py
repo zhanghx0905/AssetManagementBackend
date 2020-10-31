@@ -137,7 +137,6 @@ def asset_query(request):
         assets = assets.filter(category=category)
     if description != '':
         assets = assets.filter(description_contains=description)
-    print(type(assets))
     res = get_assets_list(assets)
     return gen_response(data=res, code=200, message='条件搜索资产')
 

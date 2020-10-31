@@ -1,6 +1,8 @@
 ''' user/view.py, all in domain api/user/ '''
 from app.settings import DEFAULT_PASSWORD
 from app.utils import catch_exception, gen_response, parse_args
+from asset.models import Asset
+from asset.utils import get_assets_list
 from department.models import Department
 from .models import User
 from .utils import auth_permission_required
@@ -220,3 +222,14 @@ def user_change_password(request):
     user.set_password(new_pwd)
     user.save()
     return gen_response(code=200, message=f'用户 {user.username} 密码更改')
+
+
+@catch_exception('GET')
+def user_assets(request):
+    ''' api/user/assets GET
+    获得自己名下的资产列表
+    '''
+    user = request.user
+    assets = Asset.objects.filter(owner=user)
+    res = get_assets_list(assets)
+    return gen_response(data=res, code=200, message=f'获得 {user.username} 名下的资产')
