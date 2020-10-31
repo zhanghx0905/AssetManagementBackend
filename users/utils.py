@@ -8,12 +8,12 @@ from app.utils import gen_response
 from .models import User
 
 
-def user_verified(request, perms) -> str:
+def user_verified(cookies, perms) -> str:
     ''' 验证 token 是否合法
     与装饰器分离以便测试
     '''
     try:
-        token = request.COOKIES['Token']
+        token = cookies['Token']
     except KeyError:
         return 'Token 未给出'
     try:
@@ -51,7 +51,7 @@ def auth_permission_required(*perms):
         ''' 多嵌套一层，为了给装饰器传参 '''
         def _wrapped_view(request, *args, **kwargs):
             ''' 装饰器内函数 '''
-            verified = user_verified(request, perms)
+            verified = user_verified(request.COOKIES, perms)
             if verified != 'OK':
                 return error_response(message=verified)
             return view_func(request, *args, **kwargs)
