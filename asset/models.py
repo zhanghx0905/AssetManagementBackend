@@ -96,3 +96,22 @@ class Asset(MPTTModel):
             return '无'
         res = [f"{child.name}({child.id})" for child in children]
         return ','.join(res)
+
+    def get_asset_manager(self) -> User:
+        ''' 获得本资产的管理员 '''
+        departments = self.department.get_ancestors(ascending=True, include_self=True)
+        for department in departments:  # 自部门树向上遍历
+            users = User.objects.filter(department=department)
+            for user in users:  # 随机找一个资产管理员
+                if user.has_perm('user.ASSET'):
+                    return user
+        return User.admin()
+
+
+class CustomAttr(models.Model):
+    ''' custom-defined attribute '''
+    name = models.CharField(max_length=20, verbose_name='属性名', primary_key=True)
+
+
+class AssetCustomAttr(models.Model):
+    ''' custom-defined attribute linked with Asset '''

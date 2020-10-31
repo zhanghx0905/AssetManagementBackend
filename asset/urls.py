@@ -15,4 +15,7 @@ urlpatterns = [
     path('category/delete', views.category_delete),
     path('category/add', views.category_add),
     path('category/edit', views.category_edit),
+
+    path('custom/edit', views.custom_attr_edit),
+    path('custom/list', views.custom_attr_list),
 ]

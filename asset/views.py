@@ -3,7 +3,7 @@ from django.db.utils import IntegrityError
 from mptt.exceptions import InvalidMove
 
 from app.utils import catch_exception, gen_response, parse_args, parse_list, visit_tree
-from .models import Asset, AssetCategory
+from .models import Asset, AssetCategory, CustomAttr
 from .utils import gen_history, get_assets_list
 
 
@@ -201,3 +201,31 @@ def category_edit(request):
     except IntegrityError:
         return gen_response(code=203, message="类型名不能重复")
     return gen_response(code=200, message=f'修改资产类别名 {old_name} -> {name}')
+
+
+@catch_exception('POST')
+def custom_attr_edit(request):
+    ''' ##### api/asset/custom/edit POST
+    修改自定义属性
+    para:
+        - custom(list)
+    '''
+    attrs = parse_args(request.body, 'custom')[0]
+    CustomAttr.objects.all().delete()
+    for attr in attrs:
+        try:
+            CustomAttr.objects.create(name=attr)
+        except IntegrityError:
+            return gen_response(code=203, message='不能设置两个相同自定义属性')
+    return gen_response(code=200, message='编辑自定义属性')
+
+
+@catch_exception('GET')
+def custom_attr_list(request):
+    '''
+    api/asset/custom/list GET
+    获得自定义属性
+    '''
+    attrs = CustomAttr.objects.filter()
+    res = [attr.name for attr in attrs]
+    return gen_response(code=200, data=res, messgae='获得自定义属性列表')
