@@ -43,7 +43,7 @@ style-test:
   before_script:
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements_dev.txt
   script:
-    - pylint --load-plugins=pylint_django app users asset department
+    - pylint --load-plugins=pylint_django app users asset department issue
     - BACKEND_RET=$?
     - exit $BACKEND_RET
 
