@@ -14,8 +14,6 @@ class AppTests(TestCase):
 
         # 测试http method error
         path = "/api/logs"
-        response = self.client.get(path)
-        self.assertEqual(response.json()['code'], 405)
 
         # 测试 size
         response = self.client.post(
