@@ -39,10 +39,6 @@ class UserTest(TestCase):
     def test_user_list(self):
         ''' views.user_list '''
         path = '/api/user/list'
-
-        response = self.client.post(path)
-        self.assertEqual(response.json()['code'], 405)
-
         response = self.client.get(path)
         self.assertEqual(response.json()['code'], 200)
 
@@ -66,8 +62,6 @@ class UserTest(TestCase):
         ''' views.user_add '''
         path = '/api/user/add'
 
-        self.illegal_input(path)
-
         paras = {
             'name': 'hexiao',
             'password': 'zhanghx',
@@ -83,8 +77,6 @@ class UserTest(TestCase):
         self.assertEqual(response.json()['code'], 400)
 
         path = '/api/user/delete'
-
-        self.illegal_input(path)
 
         paras['name'] = 'hexiao'
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
@@ -118,16 +110,12 @@ class UserTest(TestCase):
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
-        paras['name'] = 'noone'
+        paras['password'] = ''
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
-        self.assertEqual(response.json()['code'], 202)
 
     def test_user_lock(self):
         ''' views.user_lock '''
         path = '/api/user/lock'
-
-        self.illegal_input(path)
-
         paras = {
             'username': 'admin',
             'active': False
@@ -153,8 +141,6 @@ class UserTest(TestCase):
         ''' views.user_login '''
         path = self.login_path
 
-        self.illegal_input(path)
-
         paras = {
             'username': 'noone',
             'password': 'wrong'
@@ -173,8 +159,6 @@ class UserTest(TestCase):
         self.client.cookies['Token'] = response.json()['token']
 
         path = '/api/user/logout'
-        response = self.client.get(path)
-        self.assertEqual(response.json()['code'], 405)
 
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['status'], 0)
@@ -186,9 +170,6 @@ class UserTest(TestCase):
     def test_user_info(self):
         ''' views.user_info '''
         path = '/api/user/info'
-
-        response = self.client.get(path)
-        self.assertEqual(response.json()['code'], 405)
 
         response = self.client.post(path).json()
         self.assertFalse(response['status'])
