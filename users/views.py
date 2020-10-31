@@ -1,56 +1,9 @@
 ''' user/view.py, all in domain api/user/ '''
-from functools import partial
-
-import jwt
-
-from app.settings import DEFAULT_PASSWORD, SECRET_KEY
+from app.settings import DEFAULT_PASSWORD
 from app.utils import catch_exception, gen_response, parse_args
 from department.models import Department
 from .models import User
-
-
-def auth_permission_required(*perms):
-    '''
-    用于用户验证的装饰器
-    该装饰器会验证 cookies 里的 token 是否合法，
-    错误时返回 status=1, code=401
-
-    例:
-    @catch_exception('POST')
-    @auth_permission_required("users.IT", "users.SYSTEM")
-    def foo(request):
-        pass
-    '''
-    error_response = partial(gen_response, status=1, code=401)
-
-    def decorator(view_func):
-        ''' 多嵌套一层，为了给装饰器传参 '''
-        def _wrapped_view(request, *args, **kwargs):
-            ''' 装饰器内函数 '''
-            try:
-                token = request.COOKIES['Token']
-            except KeyError:
-                return error_response(message='Token 未给出')
-            try:
-                decoded = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
-                username = decoded['username']
-            except jwt.ExpiredSignatureError:
-                return error_response(message='Token 已过期')
-            except jwt.InvalidTokenError:
-                return error_response(message='Token 不合法')
-
-            user: User = User.objects.get(username=username)
-            if user.token != token:
-                return error_response(message='用户不在线')
-            if not user.active:
-                return error_response(message='用户未激活')
-
-            if not user.has_perms(perms):
-                return error_response(message='用户权限不足')
-
-            return view_func(request, *args, **kwargs)
-        return _wrapped_view
-    return decorator
+from .utils import auth_permission_required
 
 
 @catch_exception('GET')

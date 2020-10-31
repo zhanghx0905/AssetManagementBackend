@@ -64,7 +64,6 @@ class UserTest(TestCase):
 
         paras = {
             'name': 'hexiao',
-            'password': 'zhanghx',
             'department': self.department_id,
             'role': ['IT', 'ASSET']
         }
@@ -111,7 +110,7 @@ class UserTest(TestCase):
         self.assertEqual(response.json()['code'], 200)
 
         paras['password'] = ''
-        response = self.client.post(path, data=json.dumps(paras), content_type='json')
+        self.client.post(path, data=json.dumps(paras), content_type='json')
 
     def test_user_lock(self):
         ''' views.user_lock '''
