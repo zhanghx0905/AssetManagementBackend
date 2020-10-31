@@ -1,9 +1,11 @@
 '''views of app department'''
 from app.utils import catch_exception, gen_response, parse_args, visit_tree
+from users.utils import auth_permission_required
 from .models import Department
 
 
 @catch_exception('GET')
+@auth_permission_required('users.ASSET')
 def department_tree(request):
     ''' api/department/tree GET '''
     root = Department.objects.first().get_root()
@@ -12,6 +14,7 @@ def department_tree(request):
 
 
 @catch_exception('POST')
+@auth_permission_required('users.ASSET')
 def department_add(request):
     ''' api/department/add POST
     para: parent_id(int), name(str)
@@ -25,6 +28,7 @@ def department_add(request):
 
 
 @catch_exception('POST')
+@auth_permission_required('users.ASSET')
 def department_delete(request):
     ''' api/department/delete POST
     para: id(int)
@@ -45,6 +49,7 @@ def department_delete(request):
 
 
 @catch_exception('POST')
+@auth_permission_required('users.ASSET')
 def department_edit(request):
     ''' api/department/edit POST
     para: id(int), name(str)

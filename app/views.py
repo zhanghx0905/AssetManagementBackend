@@ -3,9 +3,9 @@ Basic views
 '''
 import json
 
-from .settings import LOGS_FILE_DIR
-from .utils import gen_response, parse_args, catch_exception
 from users.utils import auth_permission_required
+from .settings import LOGS_FILE_DIR
+from .utils import catch_exception, gen_response, parse_args
 
 
 @catch_exception('POST')
