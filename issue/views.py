@@ -10,9 +10,9 @@ def get_issues_list(issues):
     res = []
     for issue in issues:
         res.append({
+            'nid': issue.id,
             'initiator': issue.initiator.username,
-            'asset_id': issue.asset.id,
-            'asset': issue.asset.name,
+            'asset': f'{issue.asset.name}({issue.asset.id})',
             'assignee': issue.assignee_name
         })
     return res

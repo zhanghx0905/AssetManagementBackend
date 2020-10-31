@@ -34,4 +34,4 @@ class Issue(models.Model):
         ''' name of assignee
         如果assignee为空，返回发起者的username
         '''
-        return self.assignee.username if self.assignee is not None else ''
+        return self.assignee.username if self.assignee is not None else self.initiator.username
