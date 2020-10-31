@@ -106,3 +106,24 @@ class Asset(MPTTModel):
                 if user.has_perm('user.ASSET'):
                     return user
         return User.admin()
+
+
+class CustomAttr(models.Model):
+    ''' custom - defined attribute '''
+    name = models.CharField(max_length=20, verbose_name='属性名', primary_key=True)
+
+
+class AssetCustomAttr(models.Model):
+    ''' custom - defined attribute linked with Asset '''
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
+    key = models.ForeignKey(CustomAttr, on_delete=models.CASCADE)
+    value = models.CharField(max_length=100, verbose_name='属性值')
+
+    @classmethod
+    def get_custom_attr(cls, asset, key) -> str:
+        ''' 得到asset的某个自定义属性key的值 '''
+        try:
+            val = cls.objects.get(key__name=key, asset=asset).value
+        except cls.DoesNotExist:
+            val = ''
+        return val
