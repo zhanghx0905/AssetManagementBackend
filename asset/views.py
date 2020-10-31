@@ -4,7 +4,7 @@ from mptt.exceptions import InvalidMove
 
 from app.utils import catch_exception, gen_response, parse_args, parse_list, visit_tree
 from .models import Asset, AssetCategory
-from .utils import gen_history
+from .utils import gen_history, get_assets_list
 
 
 @catch_exception('GET')
@@ -12,27 +12,8 @@ def asset_list(request):
     '''api/asset/list GET
     return an asset list for asset manager'''
     department = request.user.department
-    all_asset = Asset.objects.filter(owner__department=department)
-    res = []
-    for asset in all_asset:
-        res.append({
-            'nid': asset.id,
-            'name': asset.name,
-            'quantity': asset.quantity,
-            'value': asset.value,
-            'now_value': asset.now_value,
-            'category': asset.category.name,
-            'type_name': asset.type_name,
-            'description': asset.description,
-            'parent_id': asset.parent_id_,
-            'parent': asset.parent_formated,
-            'children': asset.children_formated,
-            'status': asset.status,
-            'owner': asset.owner.username,
-            'department': asset.department.name,
-            'start_time': asset.start_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'service_life': asset.service_life
-        })
+    all_assets = Asset.objects.filter(owner__department=department)
+    res = get_assets_list(all_assets)
     return gen_response(code=200, data=res, message='获取资产列表')
 
 
@@ -129,7 +110,7 @@ def asset_history(request):
 @catch_exception('POST')
 def asset_require(request):
     ''' api/asset/require POST
-    param : nid(int)
+    para: nid(int)
     code =  200 success
             202 no such asset'''
     nid = parse_args(request.body, 'nid')[0]
@@ -138,6 +119,26 @@ def asset_require(request):
     asset.status = 'IN_USE'
     asset.save()
     return gen_response(code=200, message=f'{request.user.username} 领用资产 {asset.name}')
+
+
+@catch_exception('POST')
+def asset_query(request):
+    ''' api/asset/query POST
+    para: name(str), category(str), description(str)
+    '''
+    name, category, description = parse_args(request.body,
+                                             'name', 'category', 'description',
+                                             name='', category='', description='')
+    assets = Asset.objects.filter(owner__department=request.user.department)
+    if name != '':
+        assets = assets.filter(name__contains=name)
+    if category != '':
+        category = AssetCategory.objects.get(name=category)
+        assets = assets.filter(category=category)
+    if description != '':
+        assets = assets.filter(description_contains=description)
+    res = get_assets_list(assets)
+    return gen_response(data=res, code=200, message='条件搜索资产')
 
 
 @catch_exception('GET')

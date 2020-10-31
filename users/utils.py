@@ -9,7 +9,8 @@ from .models import User
 
 
 def user_verified(cookies, perms) -> str:
-    ''' 验证 token 是否合法
+    '''
+    验证 token 是否合法，
     与装饰器分离以便测试
     '''
     try:
@@ -26,8 +27,6 @@ def user_verified(cookies, perms) -> str:
     user: User = User.objects.get(username=decoded['username'])
     if user.token != token:
         return '用户不在线'
-    if not user.active:
-        return '用户未激活'
     if not user.has_perms(perms):
         return '权限不足'
     return 'OK'

@@ -1,6 +1,6 @@
 '''
 app/utils Project 级别的 utils 函数
-本文件下的函数一般不用特别测试
+utils文件下的函数一般不用特别测试
 '''
 import json
 import logging
@@ -122,7 +122,7 @@ def catch_exception(*valid_http_methods):
 def init_test(test: TestCase):
     ''' 在测试模块的setUp函数中调用，
     以初始化资源并登录admin '''
-    from users.apps import init_department, add_admin
+    from users.apps import add_admin, init_department
     init_department()
     add_admin()
     response = test.client.post('/api/user/login',
