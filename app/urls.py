@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/issue/', include('issue.urls')),
     path('api/logs', views.get_logs),
     path('admin/', admin.site.urls),
+    path('admin/doc/', include('django.contrib.admindocs.urls')),
 ]

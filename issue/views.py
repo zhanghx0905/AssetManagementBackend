@@ -116,7 +116,7 @@ def issue_handle(request):
     ''' api/issue/handle POST
     处理代办issue
     para:
-        issue_id(int): issue id
+        nid(int): issue id
         success(bool): 批准或拒绝
     '''
     def require_success(asset: Asset, issue: Issue):
@@ -138,7 +138,7 @@ def issue_handle(request):
         ''' 资产转移成功后 '''
         asset.owner = issue.assignee
 
-    issue_id, success = parse_args(request.body, 'issue_id', 'success')
+    issue_id, success = parse_args(request.body, 'nid', 'success')
 
     issue: Issue = Issue.objects.get(id=issue_id)
     issue.status = 'SUCCESS' if success else 'FAIL'
@@ -164,16 +164,13 @@ def issue_exist(request):
     查询由该用户发起的某类待办issue是否已存在。
     para:
         asset_id(int): 资产id
-        type_name(str): issue种类
-            one of 'REQUIRE', 'MAINTAIN', 'TRANSFER' and 'RETURN'.
     return: exist(bool)
     '''
-    asset_id, type_name = parse_args(request.body, 'asset_id', 'type_name')
+    asset_id = parse_args(request.body, 'asset_id')[0]
     asset: Asset = Asset.objects.get(id=asset_id)
     exist = False
     if Issue.objects.filter(initiator=request.user,
-                            asset=asset, status='DOING',
-                            type_name=type_name).exists():
+                            asset=asset, status='DOING').exists():
         exist = True
     return gen_response(code=200, exist=exist, messgae="查询事项是否存在")
 
@@ -183,9 +180,9 @@ def issue_delete(request):
     ''' api/issue/delete POST
     删除issue.
     para:
-        issue_id(int): issue id
+        nid(int): issue id
     '''
-    issue_id = parse_args(request.body, 'issue_id')[0]
+    issue_id = parse_args(request.body, 'nid')[0]
     issue: Issue = Issue.objects.get(id=issue_id)
     issue.delete()
     return gen_response(code=200, message="删除事项")
