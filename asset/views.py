@@ -67,7 +67,7 @@ def asset_add(request):
 def asset_edit(request):
     '''  api/asset/edit POST
     编辑资产
-    可编辑的条目有：name, description
+    可编辑的条目有：name, description, parent_id
     return: code =
         200: success
         201: parameter error
@@ -81,7 +81,7 @@ def asset_edit(request):
     asset = Asset.objects.get(id=nid)
     try:
         parent = Asset.objects.get(id=parent_id)
-    except Asset.DoesNotExist:
+    except (Asset.DoesNotExist, ValueError):
         parent = None
 
     asset.name, asset.parent = name, parent
