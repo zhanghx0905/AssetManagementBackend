@@ -206,3 +206,8 @@ class UserTest(TestCase):
         }, SECRET_KEY, algorithm='HS256')
         res = user_verified({'Token': token}, [])  # 用户不在线
         self.assertEqual(res, '用户不在线')
+
+    def test_user_assets(self):
+        ''' test for user/asset '''
+        response = self.client.get('/api/user/assets')
+        self.assertEqual(response.json()['code'], 200)

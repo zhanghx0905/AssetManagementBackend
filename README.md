@@ -28,7 +28,7 @@ python manage.py test
 ```
 [run]
 branch = True
-source = app,users,asset,departments
+source = app,users,asset,department,issue
 [report]
 show_missing = True
 ```
