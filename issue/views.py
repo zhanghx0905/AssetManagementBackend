@@ -12,7 +12,6 @@ def handling_list(request):
     需要本用户处理的请求列表
     '''
     issues = Issue.objects.filter(handler=request.user, status='DOING')
-
     res = get_issues_list(issues)
     return gen_response(code=200, data=res, message=f'获取用户 {request.user.username} 待办列表')
 

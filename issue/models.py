@@ -38,7 +38,5 @@ class Issue(models.Model):
 
     @property
     def assignee_name(self) -> str:
-        ''' name of assignee
-        如果assignee为空，返回发起者的username
-        '''
-        return self.assignee.username if self.assignee is not None else self.initiator.username
+        ''' name of assignee '''
+        return self.assignee.username if self.assignee is not None else ''
