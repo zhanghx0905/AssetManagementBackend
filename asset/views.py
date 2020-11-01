@@ -138,6 +138,19 @@ def asset_query(request):
     return gen_response(data=res, code=200, message='条件搜索资产')
 
 
+@catch_exception('POST')
+def asset_retire(request):
+    ''' api/asset/retire POST
+    para: nid(int) 资产id
+    '''
+    nid = parse_args(request.body, 'nid')[0]
+    asset = Asset.objects.get(id=int(nid))
+    asset.status = 'RETIRED'
+    asset._change_reason = '清退'
+    asset.save()
+    return gen_response(code=200, message=f'清退资产 {asset.name}')
+
+
 @catch_exception('GET')
 def category_tree(request):
     ''' api/asset/category/tree GET'''
