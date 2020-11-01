@@ -1,8 +1,10 @@
 '''views for app asset'''
 from django.db.utils import IntegrityError
 from mptt.exceptions import InvalidMove
+from simple_history.utils import update_change_reason
 
-from app.utils import catch_exception, gen_response, parse_args, parse_list, visit_tree
+from app.utils import (catch_exception, gen_response, parse_args, parse_list,
+                       visit_tree)
 from .models import Asset, AssetCategory, CustomAttr
 from .utils import gen_history, get_assets_list
 
@@ -146,8 +148,8 @@ def asset_retire(request):
     nid = parse_args(request.body, 'nid')[0]
     asset = Asset.objects.get(id=int(nid))
     asset.status = 'RETIRED'
-    asset._change_reason = '清退'
     asset.save()
+    update_change_reason(asset, '清退')
     return gen_response(code=200, message=f'清退资产 {asset.name}')
 
 

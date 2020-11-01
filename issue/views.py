@@ -1,4 +1,6 @@
 ''' views func for App issue '''
+from simple_history.utils import update_change_reason
+
 from users.models import User
 from issue.models import Issue
 from app.utils import catch_exception, gen_response, parse_args
@@ -64,9 +66,8 @@ def issue_fix(request):
     # 更新资产状态
     asset.owner = handler
     asset.status = 'IN_MAINTAIN'
-    asset._change_reason = '维保'
     asset.save()
-
+    update_change_reason(asset, '维保')
     message = f'{request.user.username} 向 {handler.username} 维保资产 {asset.name}'
     return gen_response(code=200, message=message)
 
@@ -124,24 +125,28 @@ def issue_handle(request):
         ''' 领用成功后 '''
         asset.owner = issue.initiator
         asset.status = 'IN_USE'
-        asset._change_reason = '领用'
+        asset.save()
+        update_change_reason(asset, '领用')
 
     def fix(asset: Asset, issue: Issue):
         ''' 资产维保 成功或失败 后 '''
         asset.owner = issue.initiator
         asset.status = 'IN_USE'
-        asset._change_reason = '维保结束'
+        asset.save()
+        update_change_reason(asset, '维保结束')
 
     def return_success(asset: Asset, issue: Issue):
         ''' 资产退还成功后 '''
         asset.owner = issue.handler
         asset.status = 'IDLE'
-        asset._change_reason = '退还'
+        asset.save()
+        update_change_reason(asset, '退还')
 
     def transfer_success(asset: Asset, issue: Issue):
         ''' 资产转移成功后 '''
         asset.owner = issue.assignee
-        asset._change_reason = '转移'
+        asset.save()
+        update_change_reason(asset, '转移')
 
     issue_id, success = parse_args(request.body, 'nid', 'success')
 
@@ -158,7 +163,6 @@ def issue_handle(request):
         transfer_success(asset, issue)
     elif success and issue.type_name == 'RETURN':
         return_success(asset, issue)
-    asset.save()
 
     return gen_response(code=200, message=f"{request.user.username} 处理待办事项")
 
