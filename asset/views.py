@@ -76,12 +76,12 @@ def asset_edit(request):
     nid, name, description, parent_id = parse_args(
         request.body,
         'nid', 'name', 'description', 'parent_id',
-        parent_id=-1)
+        parent_id='')
 
     asset = Asset.objects.get(id=nid)
     try:
         parent = Asset.objects.get(id=parent_id)
-    except (Asset.DoesNotExist, ValueError):
+    except ValueError:
         parent = None
 
     asset.name, asset.parent = name, parent
