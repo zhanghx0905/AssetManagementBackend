@@ -19,7 +19,7 @@ def handling_list(request):
 
 @catch_exception('GET')
 def waiting_list(request):
-    ''' api/issue/handling GET
+    ''' api/issue/waiting GET
     本用户等待被处理的请求列表
     '''
     issues = Issue.objects.filter(initiator=request.user)
@@ -28,7 +28,7 @@ def waiting_list(request):
 
 
 @catch_exception('POST')
-def require_issue(request):
+def issue_require(request):
     ''' api/issue/require POST
     领用资产
     para: nid(int) 资产nid
@@ -47,7 +47,7 @@ def require_issue(request):
 
 
 @catch_exception('POST')
-def fix_issue(request):
+def issue_fix(request):
     ''' api/issue/fix POST
     维保资产
     para: nid(int) 资产nid username(str) 维保人名
@@ -62,12 +62,17 @@ def fix_issue(request):
         type_name='MAINTAIN',
         status='DOING'
     )
+    # 更新资产状态
+    asset.owner = handler
+    asset.status = 'IN_MAINTAIN'
+    asset.save()
+
     message = f'{request.user.username} 向 {handler.username} 维保资产 {asset.name}'
     return gen_response(code=200, message=message)
 
 
 @catch_exception('POST')
-def transfer_issue(request):
+def issue_transfer(request):
     ''' api/issue/transfer POST
     转移资产
     para: nid(int) 资产nid username(str) 转移人名
@@ -89,7 +94,7 @@ def transfer_issue(request):
 
 
 @catch_exception('POST')
-def return_issue(request):
+def issue_return(request):
     ''' api/issue/return POST
     退还资产
     para: nid(int) 资产nid
@@ -105,3 +110,70 @@ def return_issue(request):
     )
     message = f'{request.user.username} 请求退还资产 {asset.name}'
     return gen_response(code=200, message=message)
+
+
+@catch_exception('POST')
+def issue_handle(request):
+    ''' api/issue/handle POST
+    处理代办issue
+    para:
+        issue_id(int): issue id
+        success(bool): 批准或拒绝
+    '''
+    def require_success(asset: Asset, issue: Issue):
+        ''' 领用成功后 '''
+        asset.owner = issue.initiator
+        asset.status = 'IN_USE'
+
+    def fix(asset: Asset, issue: Issue):
+        ''' 资产维保 成功或失败 后 '''
+        asset.owner = issue.initiator
+        asset.status = 'IN_USE'
+
+    def return_success(asset: Asset, issue: Issue):
+        ''' 资产退还成功后 '''
+        asset.owner = issue.handler
+        asset.status = 'IDLE'
+
+    def transfer_success(asset: Asset, issue: Issue):
+        ''' 资产转移成功后 '''
+        asset.owner = issue.assignee
+
+    issue_id, success = parse_args(request.body, 'issue_id', 'success')
+
+    issue: Issue = Issue.objects.get(id=issue_id)
+    issue.status = 'SUCCESS' if success else 'FAIL'
+    issue.save()
+
+    asset = issue.asset
+    if issue.type_name == 'MAINTAIN':
+        fix(asset, issue)
+    elif success and issue.type_name == 'REQUIRE':
+        require_success(asset, issue)
+    elif success and issue.type_name == 'TRANSFER':
+        transfer_success(asset, issue)
+    elif success and issue.type_name == 'RETURN':
+        return_success(asset, issue)
+    asset.save()
+
+    return gen_response(code=200, message=f"{request.user.username} 处理待办事项")
+
+
+@catch_exception('POST')
+def issue_exist(request):
+    ''' api/issue/exist POST
+    查询由该用户发起的某类待办issue是否已存在。
+    para:
+        asset_id(int): 资产id
+        type_name(str): issue种类
+            one of 'REQUIRE', 'MAINTAIN', 'TRANSFER' and 'RETURN'.
+    return: exist(bool)
+    '''
+    asset_id, type_name = parse_args(request.body, 'asset_id', 'type_name')
+    asset: Asset = Asset.objects.get(id=asset_id)
+    exist = False
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING',
+                            type_name=type_name).exists():
+        exist = True
+    return gen_response(code=200, exist=exist, messgae="查询issue是否存在")
