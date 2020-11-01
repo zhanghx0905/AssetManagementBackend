@@ -4,7 +4,7 @@ utils文件下的函数一般不用特别测试
 '''
 import json
 import logging
-from functools import partial
+from functools import partial, wraps
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http.response import JsonResponse
@@ -103,6 +103,7 @@ def catch_exception(*valid_http_methods):
     error_response = partial(gen_response, status=1)
 
     def decorator(func):
+        @wraps(func)
         def inner(request, *args, **kwargs):
             if request.method not in valid_http_methods:
                 return error_response(message=f'Http 方法 {request.method} 是不被允许的', code=405)

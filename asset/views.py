@@ -119,20 +119,6 @@ def asset_available_list(request):
 
 
 @catch_exception('POST')
-def asset_require(request):
-    ''' api/asset/require POST
-    para: nid(int)
-    code =  200 success
-            202 no such asset'''
-    nid = parse_args(request.body, 'nid')[0]
-    asset = Asset.objects.get(id=int(nid))
-    asset.owner = request.user
-    asset.status = 'IN_USE'
-    asset.save()
-    return gen_response(code=200, message=f'{request.user.username} 领用资产 {asset.name}')
-
-
-@catch_exception('POST')
 def asset_query(request):
     ''' api/asset/query POST
     para: name(str), category(str), description(str)

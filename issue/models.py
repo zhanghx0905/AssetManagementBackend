@@ -29,9 +29,14 @@ class Issue(models.Model):
     ]
     type_name = models.CharField(max_length=10, choices=type_choices)
 
+    status_choices = [
+        ('DOING', '进行中'),
+        ('SUCCESS', '成功'),
+        ('FAIL', '失败'),
+    ]
+    status = models.CharField(max_length=10, choices=status_choices, default='DOING')
+
     @property
     def assignee_name(self) -> str:
-        ''' name of assignee
-        如果assignee为空，返回发起者的username
-        '''
-        return self.assignee.username if self.assignee is not None else self.initiator.username
+        ''' name of assignee '''
+        return self.assignee.username if self.assignee is not None else ''

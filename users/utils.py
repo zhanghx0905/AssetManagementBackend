@@ -1,5 +1,5 @@
 ''' utils for App users '''
-from functools import partial
+from functools import partial, wraps
 
 import jwt
 
@@ -48,6 +48,7 @@ def auth_permission_required(*perms):
 
     def decorator(view_func):
         ''' 多嵌套一层，为了给装饰器传参 '''
+        @wraps(view_func)
         def _wrapped_view(request, *args, **kwargs):
             ''' 装饰器内函数 '''
             verified = user_verified(request.COOKIES, perms)

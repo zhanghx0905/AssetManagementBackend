@@ -5,3 +5,4 @@ bcrypt==3.2.0
 pyjwt==1.7.1
 django-mptt==0.11.0
 django-simple-history==2.12.0
+docutils==0.16
