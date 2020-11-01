@@ -12,6 +12,8 @@ def gen_history(record):
     }
     if record.history_user is not None:
         record_dict['user'] = record.history_user.username
+    if record.history_change_reason is not None:
+        record_dict['type'] = record.history_change_reason
     info = []
     if record.history_type == '~':
         delta = record.diff_against(record.prev_record)
