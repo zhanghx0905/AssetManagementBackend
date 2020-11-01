@@ -168,23 +168,6 @@ def issue_handle(request):
 
 
 @catch_exception('POST')
-def issue_exist(request):
-    ''' api/issue/exist POST
-    查询由该用户发起的某类待办issue是否已存在。
-    para:
-        asset_id(int): 资产id
-    return: exist(bool)
-    '''
-    asset_id = parse_args(request.body, 'asset_id')[0]
-    asset: Asset = Asset.objects.get(id=asset_id)
-    exist = False
-    if Issue.objects.filter(initiator=request.user,
-                            asset=asset, status='DOING').exists():
-        exist = True
-    return gen_response(code=200, exist=exist, messgae="查询事项是否存在")
-
-
-@catch_exception('POST')
 def issue_delete(request):
     ''' api/issue/delete POST
     删除issue.

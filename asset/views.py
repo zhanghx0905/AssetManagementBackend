@@ -147,6 +147,8 @@ def asset_retire(request):
     '''
     nid = parse_args(request.body, 'nid')[0]
     asset = Asset.objects.get(id=int(nid))
+    if asset.status == 'RETIRED':
+        return gen_response(code=203, message='已清退的资产不能再清退')
     asset.status = 'RETIRED'
     asset.save()
     update_change_reason(asset, '清退')

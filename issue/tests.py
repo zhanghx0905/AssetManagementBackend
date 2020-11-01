@@ -34,6 +34,12 @@ class IssueTest(TestCase):
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
+        # 触发 IssueConflictIssue 异常
+        response = self.client.post('/api/issue/require',
+                                    json.dumps({"nid": 1}),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 401)
+
         # handle
         response = self.client.post(self.handle_url,
                                     json.dumps({"nid": 1, "success": True}),

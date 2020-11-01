@@ -5,6 +5,11 @@ from users.models import User
 from asset.models import Asset
 
 
+class IssueConflictError(Exception):
+    ''' 同一用户发起的关于同一资产的待办issue只能有一个
+    不满足条件则抛出此异常'''
+
+
 class Issue(models.Model):
     ''' Issue Model '''
     initiator = models.ForeignKey(User, on_delete=models.CASCADE,
@@ -40,3 +45,15 @@ class Issue(models.Model):
     def assignee_name(self) -> str:
         ''' name of assignee '''
         return self.assignee.username if self.assignee is not None else ''
+
+    def save(self, *args, **kwargs) -> None:
+        ''' 重写save函数，在保存时，
+        检查由某用户发起的关于某资产的待办issue是否存在 '''
+        try:
+            issue = Issue.objects.get(initiator=self.initiator,
+                                      asset=self.asset, status='DOING')
+            if issue.id != self.id:
+                raise IssueConflictError()
+        except Issue.DoesNotExist:
+            pass
+        super().save(*args, **kwargs)
