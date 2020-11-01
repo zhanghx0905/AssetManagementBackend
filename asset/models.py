@@ -60,7 +60,11 @@ class Asset(MPTTModel):
 
     @property
     def now_value(self) -> int:
-        ''' 资产折旧后的价值 '''
+        ''' 资产折旧后的价值
+        被清退的资产价值为0
+        '''
+        if self.status == 'RETIRED':
+            return 0
         now = datetime.now()
         elapsed_year = now.year - self.start_time.year
         if elapsed_year >= self.service_life:
