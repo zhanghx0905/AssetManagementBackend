@@ -21,7 +21,7 @@ pip install -r requirements_dev.txt
 ### 附：本地检查是否能通过测试
 
 ```shell
-pylint --load-plugins=pylint_django app users asset department
+pylint --load-plugins=pylint_django app users asset department issue
 python manage.py test
 ```
 
