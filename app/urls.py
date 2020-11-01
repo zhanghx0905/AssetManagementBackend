@@ -20,10 +20,10 @@ from . import views
 
 
 urlpatterns = [
-    path('api/user/', include('users.urls')),
-    path('api/asset/', include('asset.urls')),
-    path('api/department/', include('department.urls')),
-    path('api/issue/', include('issue.urls')),
+    path('api/user/', include(('users.urls', '用户'), namespace='用户')),
+    path('api/asset/', include(('asset.urls', '资产'), namespace='资产')),
+    path('api/department/', include(('department.urls', '部门'), namespace='部门')),
+    path('api/issue/', include(('issue.urls', '事项'), namespace='事项')),
     path('api/logs', views.get_logs),
     path('admin/', admin.site.urls),
     path('admin/doc/', include('django.contrib.admindocs.urls')),

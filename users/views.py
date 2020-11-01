@@ -11,7 +11,8 @@ from .utils import auth_permission_required
 @catch_exception('GET')
 @auth_permission_required('users.SYSTEM')
 def user_list(request):
-    ''' api/user/list GET
+    '''
+    api/user/list GET
     返回所有用户的列表。
     return: data([{}]), code =
         200: success
@@ -227,9 +228,9 @@ def user_change_password(request):
 @catch_exception('GET')
 def user_assets(request):
     ''' api/user/assets GET
-    获得自己名下的资产列表
+    获得自己名下的正在使用的资产列表
     '''
     user = request.user
-    assets = Asset.objects.filter(owner=user)
+    assets = Asset.objects.filter(owner=user, status='IN_USE')
     res = get_assets_list(assets)
     return gen_response(data=res, code=200, message=f'获得 {user.username} 名下的资产')
