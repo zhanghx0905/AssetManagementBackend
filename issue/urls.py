@@ -9,6 +9,8 @@ urlpatterns = [
     path('return', views.issue_return),
     path('transfer', views.issue_transfer),
     path('handle', views.issue_handle),
+    path('exist', views.issue_exist),
+    path('delete', views.issue_delete),
 
     path('handling', views.handling_list),
     path('waiting', views.waiting_list),

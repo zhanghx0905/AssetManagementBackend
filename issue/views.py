@@ -176,4 +176,17 @@ def issue_exist(request):
                             asset=asset, status='DOING',
                             type_name=type_name).exists():
         exist = True
-    return gen_response(code=200, exist=exist, messgae="查询issue是否存在")
+    return gen_response(code=200, exist=exist, messgae="查询事项是否存在")
+
+
+@catch_exception('POST')
+def issue_delete(request):
+    ''' api/issue/delete POST
+    删除issue.
+    para:
+        issue_id(int): issue id
+    '''
+    issue_id = parse_args(request.body, 'issue_id')[0]
+    issue: Issue = Issue.objects.get(id=issue_id)
+    issue.delete()
+    return gen_response(code=200, message="删除事项")
