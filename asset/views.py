@@ -8,7 +8,7 @@ from app.utils import (catch_exception, gen_response, parse_args, parse_list,
 from department.models import Department
 from users.utils import auth_permission_required
 
-from .models import Asset, AssetCategory, CustomAttr
+from .models import Asset, AssetCategory, CustomAttr, AssetCustomAttr
 from .utils import gen_history, get_assets_list
 
 
@@ -26,7 +26,7 @@ def asset_list(request):
 def asset_add(request):
     '''  api/asset/add POST
     资产管理员添加资产，需要提供的条目：
-    type_name, quantity, value, name, category, description
+    type_name, quantity, value, name, category, description, parent_id, custom
     return: code =
         200: success
         201: parameter error
@@ -36,13 +36,15 @@ def asset_add(request):
         request.body,
         'type_name', 'quantity', 'value',
         'name', 'category', 'description',
-        'service_life', 'parent_id',
+        'service_life', 'parent_id', 'custom',
         type_name='ITEM', quantity=1,
-        description='', service_life=5, parent_id=-1
+        description='', service_life=5,
+        parent_id=-1, custom={}
     )
 
     for pack in pack_list:
-        type_name, quantity, value, name, category, description, service_life, parent_id = pack
+        type_name, quantity, value, name, category = pack[0:5]
+        description, service_life, parent_id, custom = pack[5:]
         category = AssetCategory.objects.get(name=category)
 
         try:
@@ -63,6 +65,7 @@ def asset_add(request):
         )
         asset.full_clean()
         asset.save()
+        AssetCustomAttr.update_custom_attrs(asset, custom)
     return gen_response(code=200, message=f'添加资产 {len(pack_list)} 条')
 
 
@@ -76,10 +79,10 @@ def asset_edit(request):
         201: parameter error
         202：no such asset
     '''
-    nid, name, description, parent_id = parse_args(
+    nid, name, description, parent_id, custom = parse_args(
         request.body,
-        'nid', 'name', 'description', 'parent_id',
-        parent_id='')
+        'nid', 'name', 'description', 'parent_id', 'custom',
+        parent_id='', custom={})
 
     asset = Asset.objects.get(id=nid)
     try:
@@ -91,6 +94,7 @@ def asset_edit(request):
     asset.description = description
     try:
         asset.save()
+        AssetCustomAttr.update_custom_attrs(asset, custom)
     except InvalidMove:
         return gen_response(code=203, message='无法指定自己成为自己的父资产')
     return gen_response(code=200, message=f'{asset.name} 信息修改')
