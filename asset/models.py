@@ -113,12 +113,12 @@ class Asset(MPTTModel):
 
 
 class CustomAttr(models.Model):
-    ''' custom - defined attribute '''
+    ''' custom defined attribute '''
     name = models.CharField(max_length=20, verbose_name='属性名', primary_key=True)
 
 
 class AssetCustomAttr(models.Model):
-    ''' custom - defined attribute linked with Asset '''
+    ''' custom defined attribute linked with Asset '''
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     key = models.ForeignKey(CustomAttr, on_delete=models.CASCADE)
     value = models.CharField(max_length=100, verbose_name='属性值')

@@ -257,27 +257,18 @@ def custom_attr_list(request):
 
 
 @catch_exception('POST')
-def allocation_list(request):
-    ''' api/asset/allocation/list POST
-    获取某部门的*可用*资产列表。
-    如果该部门没有资产管理员，则抛出错误。
-    para: id(int) 部门id
-    '''
-    department_id = parse_args(request.body, 'id')[0]
-    department: Department = Department.objects.get(id=department_id)
-    assets = Asset.objects.filter(owner__department=department, status='IDLE')
-    res = get_assets_list(assets)
-    return gen_response(code=200, data=res, message='获取可领用资产列表')
-
-
-@catch_exception('POST')
 def asset_allocate(request):
     ''' /api/asset/allocate POST
     调拨资产到请求者(资产管理员)的部门中
-    para: idList(List[int]) 资产id列表 '''
-    asset_id_list = parse_args(request.body, 'idList')[0]
+    para:  '''
+    asset_id_list, department_id = parse_args(request.body, 'idList', 'id')
+    department: Department = Department.objects.get(id=department_id)
+    target_manager = department.get_asset_manager()
+    if target_manager is None:
+        return gen_response(code=203, message=f'{department.name} 没有资产管理员')
     for nid in asset_id_list:
         asset = Asset.objects.get(id=nid)
-        asset.owner = request.user
+        asset.owner = target_manager
         asset.save()
-    return gen_response(code=200, message=f'{request.user.username} 调拨资产')
+        update_change_reason(asset, '调拨')
+    return gen_response(code=200, message=f'{request.user.username} 向部门 {department.name} 调拨资产')
