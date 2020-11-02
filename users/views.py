@@ -1,5 +1,4 @@
 ''' user/view.py, all in domain api/user/ '''
-from app.settings import DEFAULT_PASSWORD
 from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset
 from asset.utils import get_assets_list
@@ -86,7 +85,7 @@ def user_add(request):
 
     user = User(username=name,
                 department=department)
-    user.set_password(DEFAULT_PASSWORD)
+    user.set_password('123456')
     user.full_clean()
     user.save()
     user.set_roles(roles)

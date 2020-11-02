@@ -4,14 +4,17 @@ import json
 from django.test import TestCase
 
 from app.utils import init_test
+from .models import Department
 
 
 class DepartmentTest(TestCase):
     ''' test for App department '''
 
     def setUp(self) -> None:
-        ''' add admin and login '''
+        ''' add admin and login
+        在顶层部门下添加一个子部门 '''
         init_test(self)
+        Department.objects.create(name='子部门', parent=Department.root())
 
     def test_tree(self):
         ''' test for department/tree '''
