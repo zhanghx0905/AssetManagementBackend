@@ -5,6 +5,7 @@ from simple_history.utils import update_change_reason
 
 from app.utils import (catch_exception, gen_response, parse_args, parse_list,
                        visit_tree)
+from users.utils import auth_permission_required
 from .models import Asset, AssetCategory, CustomAttr
 from .utils import gen_history, get_assets_list
 
@@ -156,6 +157,7 @@ def asset_retire(request):
 
 
 @catch_exception('GET')
+@auth_permission_required()
 def category_tree(request):
     ''' api/asset/category/tree GET'''
     root = AssetCategory.root()
@@ -164,6 +166,7 @@ def category_tree(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def category_add(request):
     ''' api/asset/category/add POST
     para: parent_id(int), name(str)
@@ -180,6 +183,7 @@ def category_add(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def category_delete(request):
     ''' api/asset/category/delete POST
     para: id(int)
@@ -200,6 +204,7 @@ def category_delete(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def category_edit(request):
     ''' api/asset/category/edit POST
     para: id(int), name(str)

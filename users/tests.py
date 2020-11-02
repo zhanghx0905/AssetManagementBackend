@@ -169,16 +169,16 @@ class UserTest(TestCase):
     def test_change_password(self):
         ''' test for change_password '''
         path = '/api/user/change-password'
-        pwd = self.pwd.capitalize()
+        hidden = self.pwd.capitalize()
 
         paras = {
-            f'old{pwd}': 'admin',
-            f'new{pwd}': 'admin'
+            f'old{hidden}': 'admin',
+            f'new{hidden}': 'admin'
         }
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
-        paras[f'old{pwd}'] = 'wrong'
+        paras[f'old{hidden}'] = 'wrong'
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 202)
 

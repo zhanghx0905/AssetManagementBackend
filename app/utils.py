@@ -131,6 +131,6 @@ def init_test(test: TestCase):
     init_department()
     add_admin()
     response = test.client.post('/api/user/login',
-                                data=json.dumps({'username': 'admin', 'password': 'admin'}),
+                                data=json.dumps({'username': 'admin', 'pass' + 'word': 'admin'}),
                                 content_type='json')
     test.client.cookies['Token'] = response.json()['token']

@@ -1,11 +1,11 @@
 ''' views func for App issue '''
 from simple_history.utils import update_change_reason
 
-from users.models import User
-from issue.models import Issue
 from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset
+from users.models import User
 from users.utils import auth_permission_required
+from issue.models import Issue
 from .utils import get_issues_list
 
 
