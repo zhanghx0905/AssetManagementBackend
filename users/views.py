@@ -202,6 +202,7 @@ def user_info(request):
     info = {
         "name": user.username,
         "role": user.gen_roles(),
+        "department": user.department.name,
         "avatar": ''
     }
     return gen_response(status=0, userInfo=info, message=f'获取用户 {user.username} 信息')

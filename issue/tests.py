@@ -38,7 +38,7 @@ class IssueTest(TestCase):
         response = self.client.post('/api/issue/require',
                                     json.dumps({"nid": 1}),
                                     content_type='json')
-        self.assertEqual(response.json()['code'], 401)
+        self.assertEqual(response.json()['code'], 203)
 
         # handle
         response = self.client.post(self.handle_url,
@@ -76,6 +76,11 @@ class IssueTest(TestCase):
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
+        response = self.client.post('/api/issue/fix',
+                                    json.dumps({"nid": 1, "username": "admin"}),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 203)
+
         status = Asset.objects.get(id=1).status
         self.assertEqual(status, "IN_MAINTAIN")
 
@@ -90,6 +95,11 @@ class IssueTest(TestCase):
                                     json.dumps({"nid": 1, "username": "admin"}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
+
+        response = self.client.post('/api/issue/transfer',
+                                    json.dumps({"nid": 1, "username": "admin"}),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 203)
 
         response = self.client.post(self.handle_url,
                                     json.dumps({"nid": 1, "success": True}),

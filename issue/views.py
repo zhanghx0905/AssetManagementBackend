@@ -40,6 +40,9 @@ def issue_require(request):
     '''
     nid = parse_args(request.body, 'nid')[0]
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     manager = asset.get_asset_manager()
     Issue.objects.create(
         initiator=request.user,
@@ -60,6 +63,9 @@ def issue_fix(request):
     '''
     nid, username = parse_args(request.body, 'nid', 'username')
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     handler = User.objects.get(username=username)
     Issue.objects.create(
         initiator=request.user,
@@ -86,6 +92,9 @@ def issue_transfer(request):
     '''
     nid, username = parse_args(request.body, 'nid', 'username')
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     manager = asset.get_asset_manager()
     assignee = User.objects.get(username=username)
     Issue.objects.create(
@@ -109,6 +118,9 @@ def issue_return(request):
     '''
     nid = parse_args(request.body, 'nid')[0]
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     Issue.objects.create(
         initiator=request.user,
         handler=asset.get_asset_manager(),

@@ -85,7 +85,7 @@ class Asset(MPTTModel):
         if self.parent is None:
             return '无'
         parent = self.parent
-        return f'{parent.name}({parent.id})'
+        return f'{parent.name}(id={parent.id})'
 
     @property
     def children(self):
@@ -98,10 +98,10 @@ class Asset(MPTTModel):
         children = self.children
         if not children.exists():
             return '无'
-        res = [f"{child.name}({child.id})" for child in children]
+        res = [f"{child.name}(id={child.id})" for child in children]
         return ','.join(res)
 
-    def get_asset_manager(self) -> User:
+    def get_asset_manager(self):
         ''' 获得本资产的管理员 '''
         departments = self.department.get_ancestors(ascending=True, include_self=True)
         for department in departments:  # 自部门树向上遍历
@@ -109,25 +109,43 @@ class Asset(MPTTModel):
             for user in users:  # 随机找一个资产管理员
                 if user.has_perm('user.ASSET'):
                     return user
-        return User.admin()
+        return None
 
 
 class CustomAttr(models.Model):
-    ''' custom - defined attribute '''
+    ''' custom defined attribute '''
     name = models.CharField(max_length=20, verbose_name='属性名', primary_key=True)
 
 
 class AssetCustomAttr(models.Model):
-    ''' custom - defined attribute linked with Asset '''
+    ''' custom defined attribute linked with Asset '''
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
     key = models.ForeignKey(CustomAttr, on_delete=models.CASCADE)
     value = models.CharField(max_length=100, verbose_name='属性值')
 
     @classmethod
-    def get_custom_attr(cls, asset, key) -> str:
+    def get_custom_attr(cls, asset: Asset, key: CustomAttr) -> str:
         ''' 得到asset的某个自定义属性key的值 '''
         try:
-            val = cls.objects.get(key__name=key, asset=asset).value
+            return cls.objects.get(key=key, asset=asset).value
         except cls.DoesNotExist:
-            val = ''
-        return val
+            return '无'
+
+    @classmethod
+    def get_custom_attrs(cls, asset: Asset) -> dict:
+        ''' 得到asset的所有自定义属性 '''
+        keys = CustomAttr.objects.all()
+        res = {key.name: cls.get_custom_attr(asset, key) for key in keys}
+        return res
+
+    @classmethod
+    def update_custom_attrs(cls, asset: Asset, kwargs: dict):
+        ''' 更新 asset 的自定义属性 '''
+        keys = CustomAttr.objects.all()
+        for key in keys:
+            try:
+                attr = cls.objects.get(asset=asset, key=key)
+                attr.value = kwargs.get(key.name, '无')
+                attr.save()
+            except cls.DoesNotExist:
+                cls.objects.create(asset=asset, key=key, value=kwargs.get(key.name, '无'))

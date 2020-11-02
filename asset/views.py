@@ -5,8 +5,10 @@ from simple_history.utils import update_change_reason
 
 from app.utils import (catch_exception, gen_response, parse_args, parse_list,
                        visit_tree)
+from department.models import Department
 from users.utils import auth_permission_required
-from .models import Asset, AssetCategory, CustomAttr
+
+from .models import Asset, AssetCategory, CustomAttr, AssetCustomAttr
 from .utils import gen_history, get_assets_list
 
 
@@ -24,7 +26,7 @@ def asset_list(request):
 def asset_add(request):
     '''  api/asset/add POST
     资产管理员添加资产，需要提供的条目：
-    type_name, quantity, value, name, category, description
+    type_name, quantity, value, name, category, description, parent_id, custom
     return: code =
         200: success
         201: parameter error
@@ -34,13 +36,15 @@ def asset_add(request):
         request.body,
         'type_name', 'quantity', 'value',
         'name', 'category', 'description',
-        'service_life', 'parent_id',
+        'service_life', 'parent_id', 'custom',
         type_name='ITEM', quantity=1,
-        description='', service_life=5, parent_id=-1
+        description='', service_life=5,
+        parent_id=-1, custom={}
     )
 
     for pack in pack_list:
-        type_name, quantity, value, name, category, description, service_life, parent_id = pack
+        type_name, quantity, value, name, category = pack[0:5]
+        description, service_life, parent_id, custom = pack[5:]
         category = AssetCategory.objects.get(name=category)
 
         try:
@@ -61,6 +65,7 @@ def asset_add(request):
         )
         asset.full_clean()
         asset.save()
+        AssetCustomAttr.update_custom_attrs(asset, custom)
     return gen_response(code=200, message=f'添加资产 {len(pack_list)} 条')
 
 
@@ -74,10 +79,10 @@ def asset_edit(request):
         201: parameter error
         202：no such asset
     '''
-    nid, name, description, parent_id = parse_args(
+    nid, name, description, parent_id, custom = parse_args(
         request.body,
-        'nid', 'name', 'description', 'parent_id',
-        parent_id='')
+        'nid', 'name', 'description', 'parent_id', 'custom',
+        parent_id='', custom={})
 
     asset = Asset.objects.get(id=nid)
     try:
@@ -89,6 +94,7 @@ def asset_edit(request):
     asset.description = description
     try:
         asset.save()
+        AssetCustomAttr.update_custom_attrs(asset, custom)
     except InvalidMove:
         return gen_response(code=203, message='无法指定自己成为自己的父资产')
     return gen_response(code=200, message=f'{asset.name} 信息修改')
@@ -224,7 +230,7 @@ def category_edit(request):
 
 @catch_exception('POST')
 def custom_attr_edit(request):
-    ''' ##### api/asset/custom/edit POST
+    ''' api/asset/custom/edit POST
     修改自定义属性
     para:
         - custom(list)
@@ -248,3 +254,21 @@ def custom_attr_list(request):
     attrs = CustomAttr.objects.filter()
     res = [attr.name for attr in attrs]
     return gen_response(code=200, data=res, messgae='获得自定义属性列表')
+
+
+@catch_exception('POST')
+def asset_allocate(request):
+    ''' /api/asset/allocate POST
+    调拨资产到请求者(资产管理员)的部门中
+    para:  '''
+    asset_id_list, department_id = parse_args(request.body, 'idList', 'id')
+    department: Department = Department.objects.get(id=department_id)
+    target_manager = department.get_asset_manager()
+    if target_manager is None:
+        return gen_response(code=203, message=f'{department.name} 没有资产管理员')
+    for nid in asset_id_list:
+        asset = Asset.objects.get(id=nid)
+        asset.owner = target_manager
+        asset.save()
+        update_change_reason(asset, '调拨')
+    return gen_response(code=200, message=f'{request.user.username} 向部门 {department.name} 调拨资产')

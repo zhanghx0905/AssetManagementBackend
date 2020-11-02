@@ -10,7 +10,6 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http.response import JsonResponse
 from django.test.testcases import TestCase
 
-from issue.models import IssueConflictError
 
 LOGGER = logging.getLogger('web.log')
 
@@ -117,8 +116,6 @@ def catch_exception(*valid_http_methods):
                 return error_response(message=str(err), code=202)
             except ValidationError as err:  # 数据库格式错误
                 return error_response(message=str(err).replace('"', "'"), code=400)
-            except IssueConflictError:
-                return error_response(code=401, message='不能对一个资产发起多个待办事项')
             return response
         return inner
     return decorator

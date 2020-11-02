@@ -1,6 +1,6 @@
 ''' users/apps.py '''
 from django.apps import AppConfig
-from django.db.utils import OperationalError
+from django.db.utils import IntegrityError, OperationalError
 
 
 def init_department():
@@ -10,7 +10,10 @@ def init_department():
         if not Department.objects.filter(name='部门').exists():
             top_department = Department(name='部门', parent=None)
             top_department.save()
-    except OperationalError:
+            for i in range(2):
+                department = Department(name=f'子部门{i}', parent=top_department)
+                department.save()
+    except (OperationalError, IntegrityError):
         pass
 
 

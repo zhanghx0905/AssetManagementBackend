@@ -1,4 +1,5 @@
 ''' utils function for App asset '''
+from .models import AssetCustomAttr
 
 HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
 
@@ -43,6 +44,7 @@ def get_assets_list(assets):
             'owner': asset.owner.username,
             'department': asset.department.name,
             'start_time': asset.start_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'service_life': asset.service_life
+            'service_life': asset.service_life,
+            'custom': AssetCustomAttr.get_custom_attrs(asset),
         })
     return res
