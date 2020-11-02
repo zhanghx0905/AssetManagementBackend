@@ -41,19 +41,13 @@ class Issue(models.Model):
     ]
     status = models.CharField(max_length=10, choices=status_choices, default='DOING')
 
-    @property
-    def assignee_name(self) -> str:
-        ''' name of assignee '''
-        return self.assignee.username if self.assignee is not None else ''
-
-    def save(self, *args, **kwargs) -> None:
-        ''' 重写save函数，在保存时，
-        检查由某用户发起的关于某资产的待办issue是否存在 '''
-        try:
-            issue = Issue.objects.get(initiator=self.initiator,
-                                      asset=self.asset, status='DOING')
-            if issue.id != self.id:
-                raise IssueConflictError()
-        except Issue.DoesNotExist:
-            pass
-        super().save(*args, **kwargs)
+    def to_dict(self):
+        ''' 转换成字典 '''
+        return {
+            'nid': self.id,
+            'initiator': self.initiator.username,
+            'asset': f'{self.asset.name}(id={self.asset.id})',
+            'type_name': self.type_name,
+            'assignee': self.assignee.username if self.assignee is not None else '',
+            'status': self.status,
+        }

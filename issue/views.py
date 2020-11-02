@@ -5,7 +5,7 @@ from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset
 from users.models import User
 from users.utils import auth_permission_required
-from issue.models import Issue
+from issue.models import Issue, IssueConflictError
 from .utils import get_issues_list
 
 
@@ -40,6 +40,9 @@ def issue_require(request):
     '''
     nid = parse_args(request.body, 'nid')[0]
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        raise IssueConflictError()
     manager = asset.get_asset_manager()
     Issue.objects.create(
         initiator=request.user,
@@ -60,6 +63,9 @@ def issue_fix(request):
     '''
     nid, username = parse_args(request.body, 'nid', 'username')
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        raise IssueConflictError()
     handler = User.objects.get(username=username)
     Issue.objects.create(
         initiator=request.user,
@@ -86,6 +92,9 @@ def issue_transfer(request):
     '''
     nid, username = parse_args(request.body, 'nid', 'username')
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        raise IssueConflictError()
     manager = asset.get_asset_manager()
     assignee = User.objects.get(username=username)
     Issue.objects.create(
@@ -109,6 +118,9 @@ def issue_return(request):
     '''
     nid = parse_args(request.body, 'nid')[0]
     asset: Asset = Asset.objects.get(id=int(nid))
+    if Issue.objects.filter(initiator=request.user,
+                            asset=asset, status='DOING').exists():
+        raise IssueConflictError()
     Issue.objects.create(
         initiator=request.user,
         handler=asset.get_asset_manager(),

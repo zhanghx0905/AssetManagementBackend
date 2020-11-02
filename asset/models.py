@@ -85,7 +85,7 @@ class Asset(MPTTModel):
         if self.parent is None:
             return '无'
         parent = self.parent
-        return f'{parent.name}({parent.id})'
+        return f'{parent.name}(id={parent.id})'
 
     @property
     def children(self):
@@ -98,7 +98,7 @@ class Asset(MPTTModel):
         children = self.children
         if not children.exists():
             return '无'
-        res = [f"{child.name}({child.id})" for child in children]
+        res = [f"{child.name}(id={child.id})" for child in children]
         return ','.join(res)
 
     def get_asset_manager(self) -> User:
