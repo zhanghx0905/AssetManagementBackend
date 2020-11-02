@@ -1,14 +1,16 @@
 ''' views func for App issue '''
 from simple_history.utils import update_change_reason
 
-from users.models import User
-from issue.models import Issue
 from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset
+from users.models import User
+from users.utils import auth_permission_required
+from issue.models import Issue
 from .utils import get_issues_list
 
 
 @catch_exception('GET')
+@auth_permission_required()
 def handling_list(request):
     ''' api/issue/handling GET
     需要本用户处理的请求列表
@@ -19,6 +21,7 @@ def handling_list(request):
 
 
 @catch_exception('GET')
+@auth_permission_required()
 def waiting_list(request):
     ''' api/issue/waiting GET
     本用户等待被处理的请求列表
@@ -29,6 +32,7 @@ def waiting_list(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def issue_require(request):
     ''' api/issue/require POST
     领用资产
@@ -48,6 +52,7 @@ def issue_require(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def issue_fix(request):
     ''' api/issue/fix POST
     维保资产
@@ -73,6 +78,7 @@ def issue_fix(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def issue_transfer(request):
     ''' api/issue/transfer POST
     转移资产
@@ -95,6 +101,7 @@ def issue_transfer(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def issue_return(request):
     ''' api/issue/return POST
     退还资产
@@ -114,6 +121,7 @@ def issue_return(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def issue_handle(request):
     ''' api/issue/handle POST
     处理代办issue
@@ -168,23 +176,7 @@ def issue_handle(request):
 
 
 @catch_exception('POST')
-def issue_exist(request):
-    ''' api/issue/exist POST
-    查询由该用户发起的某类待办issue是否已存在。
-    para:
-        asset_id(int): 资产id
-    return: exist(bool)
-    '''
-    asset_id = parse_args(request.body, 'asset_id')[0]
-    asset: Asset = Asset.objects.get(id=asset_id)
-    exist = False
-    if Issue.objects.filter(initiator=request.user,
-                            asset=asset, status='DOING').exists():
-        exist = True
-    return gen_response(code=200, exist=exist, messgae="查询事项是否存在")
-
-
-@catch_exception('POST')
+@auth_permission_required()
 def issue_delete(request):
     ''' api/issue/delete POST
     删除issue.

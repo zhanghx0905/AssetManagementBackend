@@ -19,7 +19,6 @@ class RequestLogFilter(logging.Filter):
         record.path = getattr(LOCAL, 'path', 'none')
         record.method = getattr(LOCAL, 'method', 'none')
         record.username = getattr(LOCAL, 'username', 'none')
-        record.status_code = getattr(LOCAL, 'status_code', 'none')
 
         return True
 
@@ -48,22 +47,15 @@ class RequestLogMiddleware(MiddlewareMixin):
         LOCAL.body = body
         LOCAL.path = request.path
         LOCAL.method = request.method
+        from users.models import User
         try:
             token = request.COOKIES['Token']
             decoded = jwt.decode(token, verify=False)
             LOCAL.username = decoded['username']
-
-            from users.models import User
-            try:
-                request.user = User.objects.get(username=decoded['username'])
-            except User.DoesNotExist:
-                pass
-        except KeyError:
-            pass
-        except jwt.PyJWTError:
+            request.user = User.objects.get(username=decoded['username'])
+        except (KeyError, jwt.PyJWTError, User.DoesNotExist):
             pass
 
         response = self.get_response(request)
-        LOCAL.status_code = response.status_code
 
         return response

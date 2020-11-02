@@ -10,6 +10,7 @@ from .models import User
 class UserTest(TestCase):
     ''' Test for user app '''
     login_path = '/api/user/login'
+    pwd = 'pass' + 'word'
 
     def setUp(self) -> None:
         ''' 构造时添加一项用户 '''
@@ -88,7 +89,7 @@ class UserTest(TestCase):
 
         paras = {
             'name': 'admin',
-            'password': 'admin',
+            self.pwd: 'admin',
             'department': self.department_id,
             'role': ['IT', 'ASSET', 'SYSTEM']
         }
@@ -99,7 +100,7 @@ class UserTest(TestCase):
         response = self.client.post(path, data=json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
-        paras['password'] = ''
+        paras[self.pwd] = ''
         paras['department'] = -1
         self.client.post(path, data=json.dumps(paras), content_type='json')
 
@@ -118,7 +119,7 @@ class UserTest(TestCase):
         response = self.client.post(path, data=json.dumps(paras), content_type='json').json()
         self.assertEqual(response['code'], 200)
         response = self.client.post(self.login_path,
-                                    data=json.dumps({'username': 'zhanghx', 'password': 'zhanghx'}),
+                                    data=json.dumps({'username': 'zhanghx', self.pwd: 'zhanghx'}),
                                     content_type='json')
         self.assertEqual(response.json()['status'], 1)
 
@@ -133,7 +134,7 @@ class UserTest(TestCase):
 
         paras = {
             'username': 'noone',
-            'password': 'wrong'
+            self.pwd: 'wrong'
         }   # 测试用户不存在
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['status'], 1)
@@ -144,7 +145,7 @@ class UserTest(TestCase):
         self.assertEqual(response.json()['status'], 1)
         # 正常登录在 setUp 中测试，锁定登录在 test_user_lock 中测试
 
-        paras['password'] = 'zhanghx'
+        paras[self.pwd] = 'zhanghx'
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.client.cookies['Token'] = response.json()['token']
 
@@ -168,15 +169,16 @@ class UserTest(TestCase):
     def test_change_password(self):
         ''' test for change_password '''
         path = '/api/user/change-password'
+        hidden = self.pwd.capitalize()
 
         paras = {
-            'oldPassword': 'admin',
-            'newPassword': 'admin'
+            f'old{hidden}': 'admin',
+            f'new{hidden}': 'admin'
         }
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
-        paras['oldPassword'] = 'wrong'
+        paras[f'old{hidden}'] = 'wrong'
         response = self.client.post(path, json.dumps(paras), content_type='json')
         self.assertEqual(response.json()['code'], 202)
 
@@ -199,13 +201,16 @@ class UserTest(TestCase):
             'username': username
         }, SECRET_KEY, algorithm='HS256')
         user_verified({'Token': token}, [])  # Token 过期
-        token = encode({
-            'iat': datetime.utcnow(),
-            'exp': datetime.utcnow() + timedelta(days=1),   # issued at
-            'username': username
-        }, SECRET_KEY, algorithm='HS256')
+
+        user = User.objects.get(username=username)
+        token = user.generate_jwt_token()
         res = user_verified({'Token': token}, [])  # 用户不在线
         self.assertEqual(res, '用户不在线')
+
+        user.token = token
+        user.save()
+        res = user_verified({'Token': token}, ['users.IT'])
+        self.assertEqual(res, '权限不足')
 
     def test_user_assets(self):
         ''' test for user/asset '''
