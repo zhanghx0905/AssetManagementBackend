@@ -5,7 +5,7 @@ from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset
 from users.models import User
 from users.utils import auth_permission_required
-from issue.models import Issue, IssueConflictError
+from issue.models import Issue
 from .utils import get_issues_list
 
 
@@ -42,7 +42,7 @@ def issue_require(request):
     asset: Asset = Asset.objects.get(id=int(nid))
     if Issue.objects.filter(initiator=request.user,
                             asset=asset, status='DOING').exists():
-        raise IssueConflictError()
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     manager = asset.get_asset_manager()
     Issue.objects.create(
         initiator=request.user,
@@ -65,7 +65,7 @@ def issue_fix(request):
     asset: Asset = Asset.objects.get(id=int(nid))
     if Issue.objects.filter(initiator=request.user,
                             asset=asset, status='DOING').exists():
-        raise IssueConflictError()
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     handler = User.objects.get(username=username)
     Issue.objects.create(
         initiator=request.user,
@@ -94,7 +94,7 @@ def issue_transfer(request):
     asset: Asset = Asset.objects.get(id=int(nid))
     if Issue.objects.filter(initiator=request.user,
                             asset=asset, status='DOING').exists():
-        raise IssueConflictError()
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     manager = asset.get_asset_manager()
     assignee = User.objects.get(username=username)
     Issue.objects.create(
@@ -120,7 +120,7 @@ def issue_return(request):
     asset: Asset = Asset.objects.get(id=int(nid))
     if Issue.objects.filter(initiator=request.user,
                             asset=asset, status='DOING').exists():
-        raise IssueConflictError()
+        return gen_response(code=203, message='不能对一个资产发起多个待办事项')
     Issue.objects.create(
         initiator=request.user,
         handler=asset.get_asset_manager(),

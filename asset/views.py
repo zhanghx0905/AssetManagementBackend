@@ -5,7 +5,9 @@ from simple_history.utils import update_change_reason
 
 from app.utils import (catch_exception, gen_response, parse_args, parse_list,
                        visit_tree)
+from department.models import Department
 from users.utils import auth_permission_required
+
 from .models import Asset, AssetCategory, CustomAttr
 from .utils import gen_history, get_assets_list
 
@@ -224,7 +226,7 @@ def category_edit(request):
 
 @catch_exception('POST')
 def custom_attr_edit(request):
-    ''' ##### api/asset/custom/edit POST
+    ''' api/asset/custom/edit POST
     修改自定义属性
     para:
         - custom(list)
@@ -248,3 +250,30 @@ def custom_attr_list(request):
     attrs = CustomAttr.objects.filter()
     res = [attr.name for attr in attrs]
     return gen_response(code=200, data=res, messgae='获得自定义属性列表')
+
+
+@catch_exception('POST')
+def allocation_list(request):
+    ''' api/asset/allocation/list POST
+    获取某部门的*可用*资产列表。
+    如果该部门没有资产管理员，则抛出错误。
+    para: id(int) 部门id
+    '''
+    department_id = parse_args(request.body, 'id')[0]
+    department: Department = Department.objects.get(id=department_id)
+    assets = Asset.objects.filter(owner__department=department, status='IDLE')
+    res = get_assets_list(assets)
+    return gen_response(code=200, data=res, message='获取可领用资产列表')
+
+
+@catch_exception('POST')
+def asset_allocate(request):
+    ''' /api/asset/allocate POST
+    调拨资产到请求者(资产管理员)的部门中
+    para: idList(List[int]) 资产id列表 '''
+    asset_id_list = parse_args(request.body, 'idList')[0]
+    for nid in asset_id_list:
+        asset = Asset.objects.get(id=nid)
+        asset.owner = request.user
+        asset.save()
+    return gen_response(code=200, message=f'{request.user.username} 调拨资产')

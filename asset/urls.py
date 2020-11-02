@@ -19,4 +19,7 @@ urlpatterns = [
 
     path('custom/edit', views.custom_attr_edit),
     path('custom/list', views.custom_attr_list),
+
+    path('allocation/list', views.allocation_list),
+    path('allocate', views.asset_allocate),
 ]

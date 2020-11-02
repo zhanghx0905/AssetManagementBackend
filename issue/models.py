@@ -5,11 +5,6 @@ from users.models import User
 from asset.models import Asset
 
 
-class IssueConflictError(Exception):
-    ''' 同一用户发起的关于同一资产的待办issue只能有一个
-    不满足条件则抛出此异常'''
-
-
 class Issue(models.Model):
     ''' Issue Model '''
     initiator = models.ForeignKey(User, on_delete=models.CASCADE,
