@@ -75,17 +75,12 @@ class Asset(MPTTModel):
     @property
     def parent_id_(self):
         ''' 返回父资产 id '''
-        if self.parent is None:
-            return ''
-        return self.parent.id
+        return '' if self.parent is None else self.parent.id
 
     @property
     def parent_formated(self) -> str:
         ''' 父资产 格式化为 资产名(资产id)'''
-        if self.parent is None:
-            return '无'
-        parent = self.parent
-        return f'{parent.name}(id={parent.id})'
+        return '无' if self.parent is None else f'{self.parent.name}(id={self.parent.id})'
 
     @property
     def children(self):

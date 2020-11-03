@@ -126,3 +126,13 @@ class AssetTest(TestCase):
 
     def test_asset_query(self):
         ''' 测试资产搜索 '''
+        path = '/api/asset/query'
+        paras = {
+            'name': '旧',
+            'category': '资产',
+            'description': '信息'
+        }
+        response = self.client.post(path,
+                                    json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)

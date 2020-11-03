@@ -1,8 +1,9 @@
 # README
 
+后端API文档正在转移至[在线版本](https://www.showdoc.com.cn/AssetManagementBackendDoc)，仓库中的`doc/*.md`文档将 逐步删除。
+
 ### Structure
 
-* __doc__ 后端API文档，[在线版本](https://www.showdoc.com.cn/AssetManagementBackendDoc)
 * __app__ Core settings for Django.
   - users 用户模块
   - asset 资产模块
