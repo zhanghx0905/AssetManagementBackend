@@ -24,6 +24,7 @@ def asset_list(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def asset_add(request):
     '''  api/asset/add POST
     资产管理员添加资产，需要提供的条目：
@@ -71,6 +72,7 @@ def asset_add(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def asset_edit(request):
     '''  api/asset/edit POST
     编辑资产
@@ -264,6 +266,7 @@ def custom_attr_list(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def asset_allocate(request):
     ''' /api/asset/allocate POST
     调拨资产到请求者(资产管理员)的部门中
