@@ -7,16 +7,15 @@ HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
 def gen_history(record):
     ''' 根据历史记录获得历史 '''
     record_dict = {
-        'user': 'unknown',
+        'user': 'unknown' if record.history_user is None else record.history_user.username,
         'time': record.history_date.strftime('%Y-%m-%d %H:%M:%S'),
         'type': HISTORY_OP_TYPE[record.history_type],
     }
-    if record.history_user is not None:
-        record_dict['user'] = record.history_user.username
+
     if record.history_change_reason is not None:
         record_dict['type'] = record.history_change_reason
     info = []
-    if record.history_type == '~':
+    if record.prev_record is not None:
         delta = record.diff_against(record.prev_record)
         for change in delta.changes:
             info.append(f"{change.field} 从 {change.old} 变为 {change.new}")

@@ -26,5 +26,4 @@ urlpatterns = [
     path('api/issue/', include(('issue.urls', '事项'), namespace='事项')),
     path('api/logs', views.get_logs),
     path('admin/', admin.site.urls),
-    path('admin/doc/', include('django.contrib.admindocs.urls')),
 ]
