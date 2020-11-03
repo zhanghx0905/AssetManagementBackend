@@ -200,3 +200,16 @@ class AssetTest(TestCase):
 
     def test_asset_allocate(self):
         ''' 测试资产调配 '''
+        path = '/api/asset/allocate'
+        paras = {
+            'id': 2,
+            'idList': [1]
+        }
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 203)
+
+        paras['id'] = 1
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)

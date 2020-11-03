@@ -19,19 +19,17 @@
 
 ```shell
 pylint --load-plugins=pylint_django app users asset department issue
-python manage.py test
+coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
 ```
 
 ### 附：本地检查测试覆盖率
 
-`.coveragerc` 文件：
+在根目录下创建`.coveragerc` 文件：
 
 ```
 [run]
 branch = True
 source = app,users,asset,department,issue
-[report]
-show_missing = True
 ```
 
 命令行执行：
