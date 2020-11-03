@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'mptt',
     'simple_history',
-    'django.contrib.admindocs',
 ]
 
 MIDDLEWARE = [

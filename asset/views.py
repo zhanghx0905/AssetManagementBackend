@@ -13,6 +13,7 @@ from .utils import gen_history, get_assets_list
 
 
 @catch_exception('GET')
+@auth_permission_required()
 def asset_list(request):
     '''api/asset/list GET
     return an asset list for asset manager'''
@@ -229,6 +230,7 @@ def category_edit(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def custom_attr_edit(request):
     ''' api/asset/custom/edit POST
     修改自定义属性
@@ -246,6 +248,7 @@ def custom_attr_edit(request):
 
 
 @catch_exception('GET')
+@auth_permission_required()
 def custom_attr_list(request):
     '''
     api/asset/custom/list GET
