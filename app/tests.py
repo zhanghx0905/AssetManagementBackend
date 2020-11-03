@@ -3,7 +3,7 @@ import json
 
 from django.test import TestCase
 
-from app.utils import init_test
+from app.utils import init_test, parse_list
 
 
 class AppTests(TestCase):
@@ -33,3 +33,9 @@ class AppTests(TestCase):
         ''' wsgi '''
         from . import wsgi
         self.assertEqual(wsgi.__name__, 'app.wsgi')
+
+    def test_parse_list(self):
+        ''' 测试parse_list '''
+        parse_list('test')
+        with self.assertRaises(KeyError):
+            parse_list(json.dumps({'data': [{'val': 1}]}), 'name')

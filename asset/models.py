@@ -102,7 +102,7 @@ class Asset(MPTTModel):
         for department in departments:  # 自部门树向上遍历
             users = User.objects.filter(department=department)
             for user in users:  # 随机找一个资产管理员
-                if user.has_perm('user.ASSET'):
+                if user.has_perm('users.ASSET'):
                     return user
         return None
 

@@ -6,8 +6,9 @@ from django.db import transaction
 from simple_history.utils import update_change_reason
 
 from app.utils import init_test
-from asset.models import AssetCategory, Asset
-from users.apps import add_old_asset
+from asset.models import AssetCategory, Asset, CustomAttr
+from users.apps import add_old_asset, init_department
+from .apps import init_category
 
 
 class AssetTest(TestCase):
@@ -16,11 +17,12 @@ class AssetTest(TestCase):
     '''
 
     def setUp(self) -> None:
-        ''' 加入admin并登录，初始化资产类型
-        添加一个旧资产 '''
+        ''' 加入admin并登录，初始化资产类型、部门、自定义属性
+        添加旧资产 '''
         init_test(self)
-        root = AssetCategory(name='资产', parent=None)
-        root.save()
+        init_category()
+        init_department()
+        CustomAttr.objects.create(name='自定义')
         add_old_asset()
 
     def test_category_tree(self):
@@ -134,5 +136,80 @@ class AssetTest(TestCase):
         }
         response = self.client.post(path,
                                     json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
+        paras['name'] = ''
+        response = self.client.post(path,
+                                    json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
+        paras['category'] = ''
+        self.client.post(path, json.dumps(paras),
+                         content_type='json')
+
+        paras['description'] = ''
+        self.client.post(path, json.dumps(paras),
+                         content_type='json')
+
+    def test_asset_add_edit(self):
+        ''' 测试资产添加和编辑 '''
+        path = '/api/asset/add'
+        paras = {
+            "data": [
+                {
+                    "name": "ye",
+                    "type_name": "AMOUNT",
+                    "value": "1111",
+                    "category": "资产",
+                    "service_life": "1",
+                    "custom": {
+                        "自定义": "请"
+                    }
+                }
+            ]
+        }
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
+        path = '/api/asset/edit'
+        paras = {
+            'nid': 1,
+            'name': '新资产',
+            'description': '',
+            'parent_id': 2,
+            'custom': {
+                "自定义": "吃"
+            }
+        }
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
+        paras['parent_id'] = ''
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
+        paras['parent_id'] = 1
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 203)
+
+    def test_asset_allocate(self):
+        ''' 测试资产调配 '''
+        path = '/api/asset/allocate'
+        paras = {
+            'id': 2,
+            'idList': [1]
+        }
+        response = self.client.post(path, json.dumps(paras),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 203)
+
+        paras['id'] = 1
+        response = self.client.post(path, json.dumps(paras),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
