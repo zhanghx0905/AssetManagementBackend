@@ -187,6 +187,8 @@ class AssetTest(TestCase):
         response = self.client.post(path, json.dumps(paras),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
+        asset: Asset = Asset.objects.get(id=2)
+        self.assertEqual(asset.children_formated, f"{paras['name']}(id={paras['nid']})")
 
         paras['parent_id'] = ''
         response = self.client.post(path, json.dumps(paras),

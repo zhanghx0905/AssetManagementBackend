@@ -67,9 +67,7 @@ class Asset(MPTTModel):
             return 0
         now = datetime.now()
         elapsed_year = now.year - self.start_time.year
-        if elapsed_year >= self.service_life:
-            return 0
-        depreciation_rate = (self.service_life - elapsed_year) / self.service_life
+        depreciation_rate = max(self.service_life - elapsed_year, 0) / self.service_life
         return self.value * depreciation_rate
 
     @property
@@ -99,12 +97,11 @@ class Asset(MPTTModel):
     def get_asset_manager(self):
         ''' 获得本资产的管理员 '''
         departments = self.department.get_ancestors(ascending=True, include_self=True)
+        manager = None
         for department in departments:  # 自部门树向上遍历
-            users = User.objects.filter(department=department)
-            for user in users:  # 随机找一个资产管理员
-                if user.has_perm('users.ASSET'):
-                    return user
-        return None
+            if (manager := department.get_asset_manager()) is not None:
+                break
+        return manager
 
 
 class CustomAttr(models.Model):
