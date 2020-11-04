@@ -1,6 +1,6 @@
 # README
 
-后端API文档正在转移至[在线版本](https://www.showdoc.com.cn/AssetManagementBackendDoc)，仓库中的`doc/*.md`文档将 逐步删除。
+后端API文档正在转移至[在线版本](https://www.showdoc.com.cn/AssetManagementBackendDoc)。
 
 ### Structure
 
@@ -28,8 +28,9 @@ coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
 
 ```
 [run]
-branch = True
 source = app,users,asset,department,issue
+[report]
+show_missing = True
 ```
 
 命令行执行：
