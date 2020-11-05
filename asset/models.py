@@ -29,9 +29,6 @@ class Asset(MPTTModel):
 
     category = models.ForeignKey(AssetCategory, verbose_name='类别',
                                  on_delete=models.CASCADE, default=None)
-    ty_choices = [('ITEM', '价值型'), ('AMOUNT', '数量型')]
-    type_name = models.CharField(verbose_name='资产类型', choices=ty_choices,
-                                 max_length=20, default='ITEM')
 
     description = models.CharField(max_length=150, verbose_name='简介',
                                    blank=True, default='')
@@ -52,6 +49,8 @@ class Asset(MPTTModel):
                               on_delete=models.SET(User.admin))
 
     history = HistoricalRecords(excluded_fields=['start_time', 'lft', 'rght', 'level', 'tree_id'])
+
+    type_name = '条目型'
 
     @property
     def department(self) -> Department:
