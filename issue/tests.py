@@ -22,7 +22,7 @@ class IssueTest(TestCase):
         Asset.objects.create(name='资产',
                              quantity=1, value=1,
                              category=AssetCategory.root(),
-                             type_name='ITEM', status='IDLE',
+                             status='IDLE',
                              service_life=10,
                              owner=User.admin())
 

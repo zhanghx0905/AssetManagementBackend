@@ -43,7 +43,6 @@ def add_old_asset():
                           quantity=1,
                           value=10000,
                           category=AssetCategory.root(),
-                          type_name='ITEM',
                           status='IDLE',
                           service_life=10,
                           owner=User.admin())

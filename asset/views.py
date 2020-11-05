@@ -28,7 +28,7 @@ def asset_list(request):
 def asset_add(request):
     '''  api/asset/add POST
     资产管理员添加资产，需要提供的条目：
-    type_name, quantity, value, name, category, description, parent_id, custom
+    quantity, value, name, category, description, parent_id, custom
     return: code =
         200: success
         201: parameter error
@@ -36,17 +36,16 @@ def asset_add(request):
     '''
     pack_list = parse_list(
         request.body,
-        'type_name', 'quantity', 'value',
+        'quantity', 'value',
         'name', 'category', 'description',
         'service_life', 'parent_id', 'custom',
-        type_name='ITEM', quantity=1,
-        description='', service_life=5,
+        quantity=1, description='', service_life=5,
         parent_id=-1, custom={}
     )
 
     for pack in pack_list:
-        type_name, quantity, value, name, category = pack[0:5]
-        description, service_life, parent_id, custom = pack[5:]
+        quantity, value, name, category = pack[0:4]
+        description, service_life, parent_id, custom = pack[4:]
         category = AssetCategory.objects.get(name=category)
 
         try:
@@ -54,7 +53,6 @@ def asset_add(request):
         except Asset.DoesNotExist:
             parent = None
         asset = Asset(
-            type_name=type_name,
             quantity=quantity,
             value=value,
             name=name,
@@ -161,8 +159,8 @@ def asset_retire(request):
     '''
     nid = parse_args(request.body, 'nid')[0]
     asset = Asset.objects.get(id=int(nid))
-    if asset.status == 'RETIRED':
-        return gen_response(code=203, message='已清退的资产不能再清退')
+    if asset.status != 'IDLE':
+        return gen_response(code=203, message='只能清退空闲中的资产')
     asset.status = 'RETIRED'
     asset.save()
     update_change_reason(asset, '清退')
