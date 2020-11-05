@@ -20,7 +20,7 @@ class IssueTest(TestCase):
         init_test(self)
         init_category()
         Asset.objects.create(name='资产',
-                             quantity=1, value=1,
+                             value=1,
                              category=AssetCategory.root(),
                              status='IDLE',
                              service_life=10,

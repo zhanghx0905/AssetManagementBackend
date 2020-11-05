@@ -31,20 +31,16 @@ def add_old_asset():
     from asset.models import Asset, AssetCategory
     from users.models import User
     from datetime import timedelta
-    try:
-        if not Asset.objects.filter(name='旧资产').exists():
-            asset = Asset(name='旧资产',
-                          quantity=1,
-                          value=10000,
-                          category=AssetCategory.root(),
-                          status='IDLE',
-                          service_life=10,
-                          owner=User.admin())
-            asset.save()
-            asset.start_time -= timedelta(366)
-            asset.save()
-    except OperationalError:
-        pass
+    if not Asset.objects.filter(name='旧资产').exists():
+        asset = Asset(name='旧资产',
+                      value=10000,
+                      category=AssetCategory.root(),
+                      status='IDLE',
+                      service_life=10,
+                      owner=User.admin())
+        asset.save()
+        asset.start_time -= timedelta(366)
+        asset.save()
 
 
 class UsersConfig(AppConfig):

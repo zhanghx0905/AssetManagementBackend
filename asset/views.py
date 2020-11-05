@@ -28,7 +28,7 @@ def asset_list(request):
 def asset_add(request):
     '''  api/asset/add POST
     资产管理员添加资产，需要提供的条目：
-    quantity, value, name, category, description, parent_id, custom
+    value, name, category, description, parent_id, custom
     return: code =
         200: success
         201: parameter error
@@ -36,16 +36,15 @@ def asset_add(request):
     '''
     pack_list = parse_list(
         request.body,
-        'quantity', 'value',
+        'value',
         'name', 'category', 'description',
         'service_life', 'parent_id', 'custom',
-        quantity=1, description='', service_life=5,
+        description='', service_life=5,
         parent_id=-1, custom={}
     )
 
     for pack in pack_list:
-        quantity, value, name, category = pack[0:4]
-        description, service_life, parent_id, custom = pack[4:]
+        value, name, category, description, service_life, parent_id, custom = pack
         category = AssetCategory.objects.get(name=category)
 
         try:
@@ -53,7 +52,6 @@ def asset_add(request):
         except Asset.DoesNotExist:
             parent = None
         asset = Asset(
-            quantity=quantity,
             value=value,
             name=name,
             category=category,
