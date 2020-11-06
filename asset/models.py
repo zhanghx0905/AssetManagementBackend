@@ -1,4 +1,5 @@
 '''asset model'''
+import queue
 from datetime import datetime
 
 from django.db import models
@@ -49,15 +50,27 @@ class Asset(MPTTModel):
                                                  'category', 'value',
                                                  'lft', 'rght', 'level', 'tree_id', ])
 
-    def _save(self, *args, **kwargs):
-        ''' 包装父类的save方法 '''
-        super().save(*args, **kwargs)
-
-    def save(self, *args, **kwargs):
+    def save(self, *args, tree_update=False, **kwargs):
         ''' 在某些属性变化时，改变资产相关的父子资产 '''
-        if hasattr(kwargs, 'update_fields') and hasattr(kwargs['update_fields'], 'owner'):
-            return
-        self._save(*args, **kwargs)
+        def do_update(asset: Asset):
+            asset.owner = self.owner
+            asset.status = self.status
+            asset._change_reason = self._change_reason
+            asset.save()
+
+        if tree_update:  # 层次遍历更新整棵资产树
+            item_queue, root = queue.Queue(), self.get_root()
+            do_update(root)
+            item_queue.put(root)
+            while not item_queue.empty():
+                item: Asset = item_queue.get()
+                if not item.is_leaf_node():
+                    children = item.get_children()
+                    for asset in children:
+                        do_update(asset)
+                        item_queue.put(asset)
+        else:
+            super().save(*args, **kwargs)
 
     def to_dict(self):
         ''' 将 Asset 对象按字段转换成字典 '''

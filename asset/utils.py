@@ -4,7 +4,7 @@ HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
 FIELD_TO_ZH = {
     'name': '资产名',
     'description': '描述',
-    'parent': '父资产',
+    'parent': '父资产id',
     'status': '状态',
     'owner': '挂账人',
 }

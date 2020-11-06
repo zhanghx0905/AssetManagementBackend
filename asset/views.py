@@ -1,7 +1,6 @@
 '''views for app asset'''
 from django.db.utils import IntegrityError
 from mptt.exceptions import InvalidMove
-from simple_history.utils import update_change_reason
 
 from app.utils import (catch_exception, gen_response, parse_args, parse_list,
                        visit_tree)
@@ -153,15 +152,20 @@ def asset_query(request):
 @auth_permission_required()
 def asset_retire(request):
     ''' api/asset/retire POST
-    para: nid(int) 资产id
+    para: nid(int) 资产id, retire_family(bool) 是否清退关联资产
     '''
-    nid = parse_args(request.body, 'nid')[0]
-    asset = Asset.objects.get(id=int(nid))
+    nid, retire_family = parse_args(request.body, 'nid', 'retire_family', retire_family=False)
+    asset: Asset = Asset.objects.get(id=int(nid))
     if asset.status != 'IDLE':
         return gen_response(code=203, message='只能清退空闲中的资产')
     asset.status = 'RETIRED'
-    asset.save()
-    update_change_reason(asset, '清退')
+    asset._change_reason = '清退'
+    if retire_family:
+        asset.save(tree_update=True)
+    else:
+        asset.parent = None
+        asset.save()
+        Asset.objects.filter(parent=asset).update(parent=None)
     return gen_response(code=200, message=f'清退资产 {asset.name}')
 
 
@@ -273,8 +277,8 @@ def asset_allocate(request):
     if target_manager is None:
         return gen_response(code=203, message=f'{department.name} 没有资产管理员')
     for nid in asset_id_list:
-        asset = Asset.objects.get(id=nid)
+        asset: Asset = Asset.objects.get(id=nid)
         asset.owner = target_manager
-        asset.save()
-        update_change_reason(asset, '调拨')
+        asset._change_reason = '调拨'
+        asset.save(tree_update=True)
     return gen_response(code=200, message=f'{request.user.username} 向部门 {department.name} 调拨资产')
