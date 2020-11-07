@@ -140,3 +140,11 @@ class AssetCustomAttr(models.Model):
                 attr.save()
             except cls.DoesNotExist:
                 cls.objects.create(asset=asset, key=key, value=kwargs.get(key.name, '无'))
+
+    @classmethod
+    def search_custom_attr(cls, attr_name: str, key: str):
+        ''' 根据自定义属性名和关键词搜索 返回资产列表'''
+        attr: CustomAttr = CustomAttr.objects.get(name=attr_name)
+        query_set = cls.objects.filter(key=attr, value__contains=key)
+        assets = [iter.asset for iter in query_set]
+        return assets
