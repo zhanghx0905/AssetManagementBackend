@@ -1,7 +1,13 @@
 ''' utils function for App asset '''
-from .models import AssetCustomAttr
 
 HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
+FIELD_TO_ZH = {
+    'name': '资产名',
+    'description': '描述',
+    'parent': '父资产id',
+    'status': '状态',
+    'owner': '挂账人',
+}
 
 
 def gen_history(record):
@@ -18,32 +24,12 @@ def gen_history(record):
     if record.prev_record is not None:
         delta = record.diff_against(record.prev_record)
         for change in delta.changes:
-            info.append(f"{change.field} 从 {change.old} 变为 {change.new}")
+            info.append(f"{FIELD_TO_ZH[change.field]} 从 {change.old} 变为 {change.new}")
     record_dict['info'] = info
     return record_dict
 
 
 def get_assets_list(assets):
     ''' 根据Query Set获得资产列表 '''
-    res = []
-    for asset in assets:
-        res.append({
-            'nid': asset.id,
-            'name': asset.name,
-            'quantity': asset.quantity,
-            'value': asset.value,
-            'now_value': asset.now_value,
-            'category': asset.category.name,
-            'type_name': asset.type_name,
-            'description': asset.description,
-            'parent_id': asset.parent_id_,
-            'parent': asset.parent_formated,
-            'children': asset.children_formated,
-            'status': asset.status,
-            'owner': asset.owner.username,
-            'department': asset.department.name,
-            'start_time': asset.start_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'service_life': asset.service_life,
-            'custom': AssetCustomAttr.get_custom_attrs(asset),
-        })
+    res = [asset.to_dict() for asset in assets]
     return res

@@ -1,5 +1,5 @@
 [MESSAGES CONTROL]
-disable=too-few-public-methods,unbalanced-tuple-unpacking,no-member,cyclic-import
+disable=too-few-public-methods,unbalanced-tuple-unpacking,no-member,cyclic-import,protected-access,arguments-differ
 
 [TYPECHECK]
 # pylint cannot deal with classes created at run time.
