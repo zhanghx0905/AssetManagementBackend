@@ -1,4 +1,5 @@
 '''asset model'''
+import queue
 from datetime import datetime
 
 from django.db import models
@@ -23,13 +24,8 @@ class AssetCategory(MPTTModel):
 
 class Asset(MPTTModel):
     ''' asset model '''
+    # 可变属性
     name = models.CharField(max_length=30, null=False, verbose_name='资产名称')
-    quantity = models.IntegerField(verbose_name='数量', default=1)
-    value = models.IntegerField(verbose_name='价值', default=1)
-
-    category = models.ForeignKey(AssetCategory, verbose_name='类别',
-                                 on_delete=models.CASCADE, default=None)
-
     description = models.CharField(max_length=150, verbose_name='简介',
                                    blank=True, default='')
     parent = TreeForeignKey('self', blank=True, null=True,
@@ -40,17 +36,63 @@ class Asset(MPTTModel):
                       ('IN_MAINTAIN', '维护'),
                       ('RETIRED', '清退'),
                       ('DELETED', '删除')]
-
     status = models.CharField(max_length=20, choices=status_choices, default='IDLE')
+    owner = models.ForeignKey(User, verbose_name='挂账人',
+                              on_delete=models.SET(User.admin))
+    # 不可变属性
+    value = models.IntegerField(verbose_name='价值', default=1)
+    category = models.ForeignKey(AssetCategory, verbose_name='类别',
+                                 on_delete=models.CASCADE, default=None)
     start_time = models.DateTimeField(verbose_name='录入时间', auto_now_add=True)
     service_life = models.IntegerField(verbose_name='使用年限', default=1)
 
-    owner = models.ForeignKey(User, verbose_name='挂账人',
-                              on_delete=models.SET(User.admin))
+    history = HistoricalRecords(excluded_fields=['start_time', 'service_life',
+                                                 'category', 'value',
+                                                 'lft', 'rght', 'level', 'tree_id', ])
 
-    history = HistoricalRecords(excluded_fields=['start_time', 'lft', 'rght', 'level', 'tree_id'])
+    def save(self, *args, tree_update=False, **kwargs):
+        ''' 在某些属性变化时，改变资产相关的父子资产 '''
+        def do_update(asset: Asset):
+            asset.owner = self.owner
+            asset.status = self.status
+            asset._change_reason = self._change_reason
+            asset.save()
 
-    type_name = '条目型'
+        if tree_update:  # 层次遍历更新整棵资产树
+            item_queue, root = queue.Queue(), self.get_root()
+            do_update(root)
+            item_queue.put(root)
+            while not item_queue.empty():
+                item: Asset = item_queue.get()
+                if not item.is_leaf_node():
+                    children = item.get_children()
+                    for asset in children:
+                        do_update(asset)
+                        item_queue.put(asset)
+        else:
+            super().save(*args, **kwargs)
+
+    def to_dict(self):
+        ''' 将 Asset 对象按字段转换成字典 '''
+        return {
+            'nid': self.id,
+            'name': self.name,
+            'quantity': 1,
+            'value': self.value,
+            'now_value': self.now_value,
+            'category': self.category.name,
+            'type_name': '条目型',
+            'description': self.description,
+            'parent_id': '' if self.parent is None else self.parent.id,
+            'parent': self.parent_formated,
+            'children': self.children_formated,
+            'status': self.status,
+            'owner': self.owner.username,
+            'department': self.department.name,
+            'start_time': self.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'service_life': self.service_life,
+            'custom': AssetCustomAttr.get_custom_attrs(self),
+        }
 
     @property
     def department(self) -> Department:
@@ -68,11 +110,6 @@ class Asset(MPTTModel):
         elapsed_year = now.year - self.start_time.year
         depreciation_rate = max(self.service_life - elapsed_year, 0) / self.service_life
         return self.value * depreciation_rate
-
-    @property
-    def parent_id_(self):
-        ''' 返回父资产 id '''
-        return '' if self.parent is None else self.parent.id
 
     @property
     def parent_formated(self) -> str:
@@ -98,7 +135,8 @@ class Asset(MPTTModel):
         departments = self.department.get_ancestors(ascending=True, include_self=True)
         manager = None
         for department in departments:  # 自部门树向上遍历
-            if (manager := department.get_asset_manager()) is not None:
+            manager = department.get_asset_manager()
+            if manager is not None:
                 break
         return manager
 
@@ -116,11 +154,12 @@ class AssetCustomAttr(models.Model):
 
     @classmethod
     def get_custom_attr(cls, asset: Asset, key: CustomAttr) -> str:
-        ''' 得到asset的某个自定义属性key的值 '''
+        ''' 得到asset的某个自定义属性key的值，如果没有，就创建一个空的 '''
         try:
             return cls.objects.get(key=key, asset=asset).value
         except cls.DoesNotExist:
-            return '无'
+            cls.objects.create(asset=asset, key=key, value='')
+            return ''
 
     @classmethod
     def get_custom_attrs(cls, asset: Asset) -> dict:
@@ -136,7 +175,16 @@ class AssetCustomAttr(models.Model):
         for key in keys:
             try:
                 attr = cls.objects.get(asset=asset, key=key)
-                attr.value = kwargs.get(key.name, '无')
+                attr.value = kwargs.get(key.name, '')
                 attr.save()
             except cls.DoesNotExist:
-                cls.objects.create(asset=asset, key=key, value=kwargs.get(key.name, '无'))
+                cls.objects.create(asset=asset, key=key, value=kwargs.get(key.name, ''))
+
+    @classmethod
+    def search_custom_attr(cls, attr_name: str, key: str, assets):
+        ''' 根据自定义属性名和关键词搜索 返回资产列表'''
+        attr = CustomAttr.objects.get(name=attr_name)
+        attrs = AssetCustomAttr.objects.filter(key=attr,
+                                               value__contains=key)
+        assets = assets.filter(assetcustomattr__in=attrs)
+        return assets

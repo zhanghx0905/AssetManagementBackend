@@ -132,14 +132,10 @@ class AssetTest(TestCase):
         paras = {
             'name': '旧',
             'category': '资产',
-            'description': '信息'
+            'description': '信息',
+            'customKey': '自定义',
+            'customValue': ''
         }
-        response = self.client.post(path,
-                                    json.dumps(paras),
-                                    content_type='json')
-        self.assertEqual(response.json()['code'], 200)
-
-        paras['name'] = ''
         response = self.client.post(path,
                                     json.dumps(paras),
                                     content_type='json')
@@ -149,7 +145,7 @@ class AssetTest(TestCase):
         self.client.post(path, json.dumps(paras),
                          content_type='json')
 
-        paras['description'] = ''
+        paras['customKey'] = ''
         self.client.post(path, json.dumps(paras),
                          content_type='json')
 
