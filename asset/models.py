@@ -117,11 +117,12 @@ class AssetCustomAttr(models.Model):
 
     @classmethod
     def get_custom_attr(cls, asset: Asset, key: CustomAttr) -> str:
-        ''' 得到asset的某个自定义属性key的值 '''
+        ''' 得到asset的某个自定义属性key的值，如果没有，就创建一个空的 '''
         try:
             return cls.objects.get(key=key, asset=asset).value
         except cls.DoesNotExist:
-            return '无'
+            cls.objects.create(asset=asset, key=key, value='')
+            return ''
 
     @classmethod
     def get_custom_attrs(cls, asset: Asset) -> dict:
@@ -137,15 +138,16 @@ class AssetCustomAttr(models.Model):
         for key in keys:
             try:
                 attr = cls.objects.get(asset=asset, key=key)
-                attr.value = kwargs.get(key.name, '无')
+                attr.value = kwargs.get(key.name, '')
                 attr.save()
             except cls.DoesNotExist:
-                cls.objects.create(asset=asset, key=key, value=kwargs.get(key.name, '无'))
+                cls.objects.create(asset=asset, key=key, value=kwargs.get(key.name, ''))
 
     @classmethod
-    def search_custom_attr(cls, attr_name: str, key: str):
+    def search_custom_attr(cls, attr_name: str, key: str, assets):
         ''' 根据自定义属性名和关键词搜索 返回资产列表'''
-        attr: CustomAttr = CustomAttr.objects.get(name=attr_name)
-        query_set = cls.objects.filter(key=attr, value__contains=key)
-        assets = [iter.asset for iter in query_set]
+        attr = CustomAttr.objects.get(name=attr_name)
+        attrs = AssetCustomAttr.objects.filter(key=attr,
+                                               value__contains=key)
+        assets = assets.filter(assetcustomattr__in=attrs)
         return assets

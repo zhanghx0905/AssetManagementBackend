@@ -136,17 +136,18 @@ def asset_query(request):
     ''' api/asset/query POST
     para: name(str), category(str), description(str)
     '''
-    name, category, description = parse_args(request.body,
-                                             'name', 'category', 'description',
-                                             name='', category='', description='')
+    args = parse_args(request.body,
+                      'name', 'category', 'description',
+                      'customKey', 'customValue')
+    name, category, description, key, value = args
     assets = Asset.objects.filter(owner__department=request.user.department)
-    if name != '':
-        assets = assets.filter(name__contains=name)
+    assets = assets.filter(name__contains=name)
+    assets = assets.filter(description__contains=description)
     if category != '':
         category = AssetCategory.objects.get(name=category)
         assets = assets.filter(category=category)
-    if description != '':
-        assets = assets.filter(description__icontains=description)
+    if key != '':
+        assets = AssetCustomAttr.search_custom_attr(key, value, assets)
     res = get_assets_list(assets)
     return gen_response(data=res, code=200, message='条件搜索资产')
 
