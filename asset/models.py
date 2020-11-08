@@ -98,7 +98,8 @@ class Asset(MPTTModel):
         departments = self.department.get_ancestors(ascending=True, include_self=True)
         manager = None
         for department in departments:  # 自部门树向上遍历
-            if (manager := department.get_asset_manager()) is not None:
+            manager = department.get_asset_manager()
+            if manager is not None:
                 break
         return manager
 
