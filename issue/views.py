@@ -2,10 +2,10 @@
 from simple_history.utils import update_change_reason
 
 from app.utils import catch_exception, gen_response, parse_args
-from asset.models import Asset
+from asset.models import Asset, AssetCategory
 from users.models import User
 from users.utils import auth_permission_required
-from issue.models import Issue
+from issue.models import Issue, RequireIssue
 from .utils import get_issues_list
 
 
@@ -22,6 +22,8 @@ def handling_list(request):
     '''
     issues = Issue.objects.filter(handler=request.user, status='DOING')
     res = get_issues_list(issues)
+    issues = RequireIssue.objects.filter(handler=request.user, status='DOING')
+    res += get_issues_list(issues)
     return gen_response(code=200, data=res, message=f'获取用户 {request.user.username} 待办列表')
 
 
@@ -29,10 +31,12 @@ def handling_list(request):
 @auth_permission_required()
 def waiting_list(request):
     ''' api/issue/waiting GET
-    本用户等待被处理的请求列表
+    本用户已提交的请求列表
     '''
     issues = Issue.objects.filter(initiator=request.user)
     res = get_issues_list(issues)
+    issues = RequireIssue.objects.filter(initiator=request.user)
+    res += get_issues_list(issues)
     return gen_response(code=200, data=res, message=f'获取用户 {request.user.username} 在办列表')
 
 
@@ -54,9 +58,28 @@ def issue_require(request):
         handler=manager,
         asset=asset,
         type_name='REQUIRE',
-        status='DOING'
     )
     return gen_response(code=200, message=f'{request.user.username} 请求领用资产 {asset.name}')
+
+
+@catch_exception('POST')
+def issue_require_new(request):
+    ''' api/issue/require POST
+    领用资产的新API
+    para: nid(int) 资产类别id
+    '''
+    nid = parse_args(request.body, 'nid')[0]
+    category: AssetCategory = AssetCategory.objects.get(id=int(nid))
+    if RequireIssue.objects.filter(initiator=request.user,
+                                   status='DOING', asset_category=category).exists():
+        return gen_response(code=203, message='不能对同一类资产发起多个领用请求')
+    manager = request.user.department.get_asset_manager()
+    RequireIssue.objects.create(
+        initiator=request.user,
+        handler=manager,
+        asset_category=category,
+    )
+    return gen_response(code=200, message=f'{request.user.username} 请求领用资产 {category.name}')
 
 
 @catch_exception('POST')
@@ -77,7 +100,6 @@ def issue_fix(request):
         handler=handler,
         asset=asset,
         type_name='MAINTAIN',
-        status='DOING'
     )
     # 更新资产状态
     asset.owner = handler
@@ -108,7 +130,6 @@ def issue_transfer(request):
         assignee=assignee,
         asset=asset,
         type_name='TRANSFER',
-        status='DOING'
     )
     message = f'{request.user.username} 请求向 {assignee.username} 转移资产 {asset.name}'
     return gen_response(code=200, message=message)
@@ -131,7 +152,6 @@ def issue_return(request):
         handler=asset.get_asset_manager(),
         asset=asset,
         type_name='RETURN',
-        status='DOING'
     )
     message = f'{request.user.username} 请求退还资产 {asset.name}'
     return gen_response(code=200, message=message)
@@ -199,8 +219,13 @@ def issue_delete(request):
     删除issue.
     para:
         nid(int): issue id
+        type_name(str): issue类型
     '''
-    issue_id = parse_args(request.body, 'nid')[0]
-    issue: Issue = Issue.objects.get(id=issue_id)
+    issue_id, type_name = parse_args(request.body, 'nid', 'type_name',
+                                     type_name='RETURN')
+    if type_name == 'REQUIRE':
+        issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
+    else:
+        issue: Issue = Issue.objects.get(id=issue_id)
     issue.delete()
     return gen_response(code=200, message="删除事项")

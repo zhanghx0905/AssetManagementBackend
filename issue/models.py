@@ -20,8 +20,8 @@ class AbstractIssue(models.Model):
         ('SUCCESS', '成功'),
         ('FAIL', '失败'),
     ]
-    # 之后可以改成auto-created
-    status = models.CharField(max_length=10, choices=status_choices, default='DOING')
+    status = models.CharField(max_length=10, choices=status_choices,
+                              default='DOING', auto_created=True)
 
     def to_dict(self):
         ''' 转换成字典 '''
@@ -72,3 +72,13 @@ class RequireIssue(AbstractIssue):
     asset_category = models.ForeignKey(AssetCategory,
                                        on_delete=models.CASCADE,
                                        related_name='领用资产类型')
+
+    def to_dict(self):
+        ''' 转换成字典 '''
+        res = super().to_dict()
+        res.update({
+            'asset': '',
+            'type_name': 'REQUIRE',
+            'assignee': '',
+        })
+        return res
