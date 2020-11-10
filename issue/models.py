@@ -60,6 +60,7 @@ class Issue(AbstractIssue):
         res.update({
             'asset': f'{self.asset.name}(id={self.asset.id})',
             'type_name': self.type_name,
+            'category': self.asset.category.name,
             'info': '',
         })
         if self.assignee is not None:
@@ -82,6 +83,7 @@ class RequireIssue(AbstractIssue):
         res.update({
             'asset': '',
             'type_name': 'REQUIRE',
+            'category': self.asset_category.name,
             'info': f'事由：{self.reason}',
         })
         return res

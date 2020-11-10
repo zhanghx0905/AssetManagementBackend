@@ -171,7 +171,6 @@ def issue_handle(request):
         asset.status = 'IN_USE'
         asset._change_reason = '领用'
         asset.save(tree_update=True)
-        # update_change_reason(asset, '领用')
 
     def fix(asset: Asset, issue: Issue):
         ''' 资产维保 成功或失败 后 '''
