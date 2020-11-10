@@ -60,8 +60,10 @@ class Issue(AbstractIssue):
         res.update({
             'asset': f'{self.asset.name}(id={self.asset.id})',
             'type_name': self.type_name,
-            'assignee': self.assignee.username if self.assignee is not None else '',
+            'info': '',
         })
+        if self.assignee is not None:
+            res['info'] = f"维保人：{self.assignee.username}"
         return res
 
 
@@ -72,6 +74,7 @@ class RequireIssue(AbstractIssue):
     asset_category = models.ForeignKey(AssetCategory,
                                        on_delete=models.CASCADE,
                                        related_name='领用资产类型')
+    reason = models.TextField(verbose_name='申请理由')
 
     def to_dict(self):
         ''' 转换成字典 '''
@@ -79,6 +82,6 @@ class RequireIssue(AbstractIssue):
         res.update({
             'asset': '',
             'type_name': 'REQUIRE',
-            'assignee': '',
+            'info': f'事由：{self.reason}',
         })
         return res

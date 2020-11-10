@@ -4,8 +4,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('require-old', views.issue_require_old),
     path('require', views.issue_require),
-    path('require-new', views.issue_require_new),
     path('fix', views.issue_fix),
     path('return', views.issue_return),
     path('transfer', views.issue_transfer),

@@ -40,7 +40,7 @@ def waiting_list(request):
 
 @catch_exception('POST')
 @auth_permission_required()
-def issue_require(request):
+def issue_require_old(request):
     ''' api/issue/require POST
     领用资产
     para: nid(int) 资产nid
@@ -61,12 +61,12 @@ def issue_require(request):
 
 
 @catch_exception('POST')
-def issue_require_new(request):
+def issue_require(request):
     ''' api/issue/require POST
     领用资产的新API
-    para: nid(int) 资产类别id
+    para: nid(int) 资产类别id reason(str) 申领理由
     '''
-    nid = parse_args(request.body, 'nid')[0]
+    nid, reason = parse_args(request.body, 'nid', 'reason')
     category: AssetCategory = AssetCategory.objects.get(id=int(nid))
     if RequireIssue.objects.filter(initiator=request.user,
                                    status='DOING', asset_category=category).exists():
@@ -76,8 +76,9 @@ def issue_require_new(request):
         initiator=request.user,
         handler=manager,
         asset_category=category,
+        reason=reason
     )
-    return gen_response(code=200, message=f'{request.user.username} 请求领用资产 {category.name}')
+    return gen_response(code=200, message=f'{request.user.username} 请求领用资产类型 {category.name}')
 
 
 @catch_exception('POST')
@@ -104,7 +105,6 @@ def issue_fix(request):
     asset.status = 'IN_MAINTAIN'
     asset._change_reason = '维保'
     asset.save(tree_update=True)
-    # update_change_reason(asset, '维保')
     message = f'{request.user.username} 向 {handler.username} 维保资产 {asset.name}'
     return gen_response(code=200, message=message)
 
@@ -179,7 +179,6 @@ def issue_handle(request):
         asset.status = 'IN_USE'
         asset._change_reason = '维保结束'
         asset.save(tree_update=True)
-        # update_change_reason(asset, '维保结束')
 
     def return_success(asset: Asset, issue: Issue):
         ''' 资产退还成功后 '''
@@ -187,14 +186,12 @@ def issue_handle(request):
         asset.status = 'IDLE'
         asset._change_reason = '退还'
         asset.save(tree_update=True)
-        # update_change_reason(asset, '退还')
 
     def transfer_success(asset: Asset, issue: Issue):
         ''' 资产转移成功后 '''
         asset.owner = issue.assignee
         asset._change_reason = '转移'
         asset.save(tree_update=True)
-        # update_change_reason(asset, '转移')
 
     issue_id, success = parse_args(request.body, 'nid', 'success')
 

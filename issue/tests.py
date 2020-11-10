@@ -29,13 +29,14 @@ class IssueTest(TestCase):
     def test_require_return_handle(self):
         ''' test for issue_require issue_return '''
         # require
-        response = self.client.post('/api/issue/require',
+        path = '/api/issue/require-old'
+        response = self.client.post(path,
                                     json.dumps({"nid": 1}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
         # 触发 IssueConflictIssue 异常
-        response = self.client.post('/api/issue/require',
+        response = self.client.post(path,
                                     json.dumps({"nid": 1}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 203)
