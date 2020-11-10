@@ -1,9 +1,11 @@
 ''' views func for App issue '''
 from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset, AssetCategory
+from asset.utils import get_assets_list
 from users.models import User
 from users.utils import auth_permission_required
-from issue.models import Issue, RequireIssue
+
+from .models import Issue, RequireIssue
 from .utils import get_issues_list
 
 
@@ -36,28 +38,6 @@ def waiting_list(request):
     issues = RequireIssue.objects.filter(initiator=request.user)
     res += get_issues_list(issues)
     return gen_response(code=200, data=res, message=f'获取用户 {request.user.username} 在办列表')
-
-
-@catch_exception('POST')
-@auth_permission_required()
-def issue_require_old(request):
-    ''' api/issue/require POST
-    领用资产
-    para: nid(int) 资产nid
-    '''
-    nid = parse_args(request.body, 'nid')[0]
-    asset: Asset = Asset.objects.get(id=int(nid))
-    if Issue.objects.filter(initiator=request.user,
-                            asset=asset, status='DOING').exists():
-        return issue_conflict_error()
-    manager = asset.get_asset_manager()
-    Issue.objects.create(
-        initiator=request.user,
-        handler=manager,
-        asset=asset,
-        type_name='REQUIRE',
-    )
-    return gen_response(code=200, message=f'{request.user.username} 请求领用资产 {asset.name}')
 
 
 @catch_exception('POST')
@@ -165,13 +145,6 @@ def issue_handle(request):
         nid(int): issue id
         success(bool): 批准或拒绝
     '''
-    def require_success(asset: Asset, issue: Issue):
-        ''' 领用成功后 '''
-        asset.owner = issue.initiator
-        asset.status = 'IN_USE'
-        asset._change_reason = '领用'
-        asset.save(tree_update=True)
-
     def fix(asset: Asset, issue: Issue):
         ''' 资产维保 成功或失败 后 '''
         asset.owner = issue.initiator
@@ -192,23 +165,50 @@ def issue_handle(request):
         asset._change_reason = '转移'
         asset.save(tree_update=True)
 
-    issue_id, success = parse_args(request.body, 'nid', 'success')
+    issue_id, success, type_name = parse_args(request.body,
+                                              'nid', 'success', 'type_name')
 
-    issue: Issue = Issue.objects.get(id=issue_id)
+    if type_name == 'REQUIRE':
+        issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
+    else:
+        issue: Issue = Issue.objects.get(id=issue_id)
     issue.status = 'SUCCESS' if success else 'FAIL'
     issue.save()
 
     asset = issue.asset
-    if issue.type_name == 'MAINTAIN':
+
+    if type_name == 'MAINTAIN':
         fix(asset, issue)
-    elif success and issue.type_name == 'REQUIRE':
-        require_success(asset, issue)
-    elif success and issue.type_name == 'TRANSFER':
+    elif success and type_name == 'TRANSFER':
         transfer_success(asset, issue)
-    elif success and issue.type_name == 'RETURN':
+    elif success and type_name == 'RETURN':
         return_success(asset, issue)
 
     return gen_response(code=200, message=f"{request.user.username} 处理待办事项")
+
+
+@catch_exception('POST')
+@auth_permission_required()
+def issue_permit_require(request):
+    '''
+    api/issue/permit-require POST
+    资产管理员同意员工的资产申领请求，并向员工分配资产。
+    para:
+        nid(int): require issue id
+        selectedRows(List[int]): 资产id列表
+    '''
+    issue_id, asset_ids = parse_args(request.body, 'nid', 'selectedRows')
+    issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
+    for asset_id in asset_ids:
+        asset: Asset = Asset.objects.get(id=asset_id)
+        asset.owner = issue.initiator
+        asset.status = 'IN_USE'
+        asset._change_reason = '领用'
+        asset.save(tree_update=True)
+        issue.asset.add(asset)
+    issue.status = 'SUCCESS'
+    issue.save()
+    return gen_response(code=200, message=f"{request.user.username} 批准资产领用请求")
 
 
 @catch_exception('POST')
@@ -228,3 +228,18 @@ def issue_delete(request):
         issue: Issue = Issue.objects.get(id=issue_id)
     issue.delete()
     return gen_response(code=200, message="删除事项")
+
+
+@catch_exception('POST')
+@auth_permission_required()
+def require_asset_list(request):
+    ''' api/issue/require-asset-list  POST
+    同意资产领用时需要的某类空闲中资产列表
+    para: category(str)
+    '''
+    category = parse_args(request.body, 'category')
+    category = AssetCategory.objects.get(name=category)
+    assets = Asset.objects.filter(owner__department=request.user.department,
+                                  status='IDLE', category=category)
+    res = get_assets_list(assets)
+    return gen_response(data=res, code=200)

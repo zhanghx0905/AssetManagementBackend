@@ -27,28 +27,30 @@ class IssueTest(TestCase):
                              owner=User.admin())
 
     def test_require_return_handle(self):
-        ''' test for issue_require issue_return '''
+        """ test for issue_require issue_return """
         # require
-        path = '/api/issue/require-old'
+        path = '/api/issue/require'
         response = self.client.post(path,
-                                    json.dumps({"nid": 1}),
+                                    json.dumps({"category": '资产'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
         # 触发 IssueConflictIssue 异常
         response = self.client.post(path,
-                                    json.dumps({"nid": 1}),
+                                    json.dumps({"category": '资产'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 203)
 
         # handle
-        response = self.client.post(self.handle_url,
-                                    json.dumps({"nid": 1, "success": True}),
+        path = '/api/issue/permit-require'
+        response = self.client.post(path,
+                                    json.dumps({"nid": 1, "selectedRows": [1]}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
         response = self.client.post(self.handle_url,
-                                    json.dumps({"nid": 1, "success": False}),
+                                    json.dumps({"nid": 1, "success": False,
+                                                'type_name': 'REQUIRE'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
@@ -68,7 +70,8 @@ class IssueTest(TestCase):
 
         # handle
         response = self.client.post(self.handle_url,
-                                    json.dumps({"nid": 2, "success": True}),
+                                    json.dumps({"nid": 1, "success": True,
+                                                'type_name': 'RETURN'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
@@ -91,7 +94,8 @@ class IssueTest(TestCase):
         self.assertEqual(status, "IN_MAINTAIN")
 
         response = self.client.post(self.handle_url,
-                                    json.dumps({"nid": 1, "success": True}),
+                                    json.dumps({"nid": 1, "success": True,
+                                                'type_name': 'MAINTAIN'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
@@ -108,7 +112,8 @@ class IssueTest(TestCase):
         self.assertEqual(response.json()['code'], 203)
 
         response = self.client.post(self.handle_url,
-                                    json.dumps({"nid": 1, "success": True}),
+                                    json.dumps({"nid": 1, "success": True,
+                                                'type_name': 'TRANSFER'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
