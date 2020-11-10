@@ -112,8 +112,8 @@ def catch_exception(*valid_http_methods):
                 response = func(request, *args, **kwargs)
             except KeyError as err:   # POST 请求体错误
                 return error_response(message=str(err), code=201)
-            except ObjectDoesNotExist as err:   # 数据库对应表项不存在错误
-                return error_response(message=str(err), code=202)
+            except ObjectDoesNotExist:   # 数据库对应表项不存在错误
+                return error_response(message='数据库对应表项不存在', code=202)
             except ValidationError as err:  # 数据库格式错误
                 return error_response(message=str(err).replace('"', "'"), code=400)
             return response

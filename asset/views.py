@@ -47,9 +47,12 @@ def asset_add(request):
         category = AssetCategory.objects.get(name=category)
 
         try:
-            parent = Asset.objects.get(id=parent_id)
+            parent: Asset = Asset.objects.get(id=parent_id)
         except Asset.DoesNotExist:
             parent = None
+        else:
+            if parent.status != 'IDLE':
+                return gen_response(code=204, message='只能指定空闲资产为父资产')
         asset = Asset(
             value=value,
             name=name,
@@ -87,6 +90,9 @@ def asset_edit(request):
         parent = Asset.objects.get(id=parent_id)
     except ValueError:
         parent = None
+    else:
+        if parent.status != 'IDLE' or asset.status != 'IDLE':
+            return gen_response(code=204, message='只能修改空闲资产间的父子关系')
 
     asset.name, asset.parent = name, parent
     asset.description = description

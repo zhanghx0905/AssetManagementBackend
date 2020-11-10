@@ -47,7 +47,6 @@ class Issue(AbstractIssue):
                                  related_name='assignee',
                                  blank=True, null=True)
     type_choices = [
-        ('REQUIRE', '领用'),
         ('MAINTAIN', '维修'),
         ('TRANSFER', '转移'),
         ('RETURN', '退库')

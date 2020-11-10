@@ -221,8 +221,7 @@ def issue_delete(request):
         nid(int): issue id
         type_name(str): issue类型
     '''
-    issue_id, type_name = parse_args(request.body, 'nid', 'type_name',
-                                     type_name='RETURN')
+    issue_id, type_name = parse_args(request.body, 'nid', 'type_name')
     if type_name == 'REQUIRE':
         issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
     else:
