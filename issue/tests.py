@@ -122,7 +122,7 @@ class IssueTest(TestCase):
         issue_delete '''
         asset = Asset.objects.get(id=1)
         Issue.objects.create(initiator=User.admin(), handler=User.admin(),
-                             asset=asset, type_name='REQUIRE', status='DOING')
+                             asset=asset, type_name='RETURN', status='DOING')
 
         response = self.client.get('/api/issue/handling').json()
         self.assertEqual(response['code'], 200)
@@ -134,7 +134,7 @@ class IssueTest(TestCase):
 
         # delete
         response = self.client.post('/api/issue/delete',
-                                    json.dumps({"nid": 1}),
+                                    json.dumps({"nid": 1, "type_name": 'RETURN'}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
         self.assertFalse(Issue.objects.filter().exists())
