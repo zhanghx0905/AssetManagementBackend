@@ -64,10 +64,10 @@ def issue_require_old(request):
 def issue_require(request):
     ''' api/issue/require POST
     领用资产的新API
-    para: nid(int) 资产类别id reason(str) 申领理由
+    para: category(str) 资产类别名 reason(str) 申领理由
     '''
-    nid, reason = parse_args(request.body, 'nid', 'reason')
-    category: AssetCategory = AssetCategory.objects.get(id=int(nid))
+    category, reason = parse_args(request.body, 'category', 'reason', reason='')
+    category: AssetCategory = AssetCategory.objects.get(name=category)
     if RequireIssue.objects.filter(initiator=request.user,
                                    status='DOING', asset_category=category).exists():
         return gen_response(code=203, message='不能对同一类资产发起多个领用请求')
