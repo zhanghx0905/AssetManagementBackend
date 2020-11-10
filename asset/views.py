@@ -135,7 +135,9 @@ def asset_query(request):
     '''
     args = parse_args(request.body,
                       'name', 'category', 'description',
-                      'customKey', 'customValue')
+                      'customKey', 'customValue',
+                      name='', category='', description='',
+                      customKey='', customValue='')
     name, category, description, key, value = args
     assets = Asset.objects.filter(owner__department=request.user.department)
     assets = assets.filter(name__contains=name)
