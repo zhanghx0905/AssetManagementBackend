@@ -32,4 +32,5 @@ def gen_history(record):
 def get_assets_list(assets):
     ''' 根据Query Set获得资产列表 '''
     res = [asset.to_dict() for asset in assets]
+    res.sort(key=lambda asset: asset['nid'])
     return res

@@ -81,9 +81,12 @@ class RequireIssue(AbstractIssue):
         ''' 转换成字典 '''
         res = super().to_dict()
         res.update({
-            'asset': '',
             'type_name': 'REQUIRE',
             'category': self.asset_category.name,
             'info': f'事由：{self.reason}',
         })
+        asset_names = []
+        for asset in self.asset.all():
+            asset_names.append(f'{asset.name}(id={asset.id})')
+        res['asset'] = ','.join(asset_names)
         return res

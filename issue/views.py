@@ -144,6 +144,7 @@ def issue_handle(request):
     para:
         nid(int): issue id
         success(bool): 批准或拒绝
+        type_name(str): issue name
     '''
     def fix(asset: Asset, issue: Issue):
         ''' 资产维保 成功或失败 后 '''
