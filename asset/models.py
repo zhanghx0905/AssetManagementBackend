@@ -85,7 +85,7 @@ class Asset(MPTTModel):
             'description': self.description,
             'parent_id': '' if self.parent is None else self.parent.id,
             'parent': self.parent_formated,
-            'children': self.children_formated,
+            'children_': self.children_formated,
             'status': self.status,
             'owner': self.owner.username,
             'department': self.department.name,

@@ -237,7 +237,7 @@ def require_asset_list(request):
     同意资产领用时需要的某类空闲中资产列表
     para: category(str)
     '''
-    category = parse_args(request.body, 'category')
+    category = parse_args(request.body, 'category')[0]
     category = AssetCategory.objects.get(name=category)
     assets = Asset.objects.filter(owner__department=request.user.department,
                                   status='IDLE', category=category)
