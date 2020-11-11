@@ -137,10 +137,10 @@ def user_lock(request):
         203: admin can not be locked
     '''
     username, active = parse_args(request.body, 'username', 'active')
-
-    if username == 'admin':
-        return gen_response(message='admin 必须处于活跃状态', code=203)
+    if username in ['admin', request.user.username]:
+        return gen_response(message='不能锁定自己或admin', code=203)
     user = User.objects.get(username=username)
+
     user.active = active
     user.save()
     return gen_response(code=200)
@@ -226,6 +226,7 @@ def user_change_password(request):
 
 
 @catch_exception('GET')
+@auth_permission_required()
 def user_assets(request):
     ''' api/user/assets GET
     获得自己名下的正在使用的资产列表

@@ -41,6 +41,7 @@ def waiting_list(request):
 
 
 @catch_exception('POST')
+@auth_permission_required()
 def issue_require(request):
     ''' api/issue/require POST
     领用资产的新API
@@ -52,6 +53,8 @@ def issue_require(request):
                                    status='DOING', asset_category=category).exists():
         return gen_response(code=203, message='不能对同一类资产发起多个领用请求')
     manager = request.user.department.get_asset_manager()
+    if manager is None:
+        return gen_response(code=204, message='本部门暂无资产管理员，无法进行领用')
     RequireIssue.objects.create(
         initiator=request.user,
         handler=manager,
