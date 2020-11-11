@@ -131,7 +131,11 @@ class Asset(MPTTModel):
         return ','.join(res)
 
     def get_asset_manager(self):
-        ''' 获得本资产的管理员 '''
+        '''
+        获得本资产的管理员
+
+        如果本部门没有资产管理员，则自部门树向上遍历，直至顶层部门
+        '''
         departments = self.department.get_ancestors(ascending=True, include_self=True)
         manager = None
         for department in departments:  # 自部门树向上遍历

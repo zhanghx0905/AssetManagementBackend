@@ -1,5 +1,4 @@
 ''' app/middlewares.py '''
-import json
 import logging
 import threading
 
@@ -15,7 +14,6 @@ class RequestLogFilter(logging.Filter):
     '''
 
     def filter(self, record):
-        record.body = getattr(LOCAL, 'body', 'none')
         record.path = getattr(LOCAL, 'path', 'none')
         record.method = getattr(LOCAL, 'method', 'none')
         record.username = getattr(LOCAL, 'username', 'none')
@@ -34,17 +32,6 @@ class RequestLogMiddleware(MiddlewareMixin):
 
     def __call__(self, request):
 
-        try:
-            body = json.loads(request.body)
-        except json.JSONDecodeError:
-            body = dict()
-
-        if request.method == 'GET':
-            body.update(dict(request.GET))
-        else:
-            body.update(dict(request.POST))
-
-        LOCAL.body = body
         LOCAL.path = request.path
         LOCAL.method = request.method
         from users.models import User
