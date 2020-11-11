@@ -162,7 +162,7 @@ LOGGING = {
     'handlers': {
         # 自定义 handlers，输出到文件
         'restful_api': {
-            'level': 'WARNING',
+            'level': 'INFO',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': LOGS_FILE_DIR,
             'formatter': 'standard',
