@@ -7,7 +7,7 @@ from app.utils import init_test
 from asset.apps import init_category
 from asset.models import Asset, AssetCategory
 from users.models import User
-from .models import Issue
+from .models import Issue, RequireIssue
 
 
 class IssueTest(TestCase):
@@ -121,16 +121,24 @@ class IssueTest(TestCase):
         ''' test for handling_list and waiting_list
         issue_delete '''
         asset = Asset.objects.get(id=1)
-        Issue.objects.create(initiator=User.admin(), handler=User.admin(),
-                             asset=asset, type_name='RETURN', status='DOING')
+        Issue.objects.create(initiator=User.admin(),
+                             handler=User.admin(), assignee=User.admin(),
+                             asset=asset, type_name='MAINTAIN')
+
+        category: AssetCategory = AssetCategory.root()
+        require_issue = RequireIssue(initiator=User.admin(),
+                                     handler=User.admin(), asset_category=category,
+                                     reason='')
+        require_issue.save()
+        require_issue.asset.add(asset)
 
         response = self.client.get('/api/issue/handling').json()
         self.assertEqual(response['code'], 200)
-        self.assertEqual(len(response['data']), 1)
+        self.assertEqual(len(response['data']), 2)
 
         response = self.client.get('/api/issue/waiting').json()
         self.assertEqual(response['code'], 200)
-        self.assertEqual(len(response['data']), 1)
+        self.assertEqual(len(response['data']), 2)
 
         # delete
         response = self.client.post('/api/issue/delete',
@@ -138,3 +146,19 @@ class IssueTest(TestCase):
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
         self.assertFalse(Issue.objects.filter().exists())
+
+        # 删除 RequireIssue
+        response = self.client.post('/api/issue/delete',
+                                    json.dumps({"nid": 1, "type_name": 'REQUIRE'}),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+        self.assertFalse(RequireIssue.objects.filter().exists())
+
+    def test_require_asset_list(self):
+        ''' test for require_asset_list'''
+        path = '/api/issue/require-asset-list'
+
+        response = self.client.post(path,
+                                    json.dumps({'category': '资产'}),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)

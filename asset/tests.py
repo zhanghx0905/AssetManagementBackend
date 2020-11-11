@@ -126,6 +126,14 @@ class AssetTest(TestCase):
         self.assertEqual(response['code'], 200)
         self.assertEqual(len(response['data']), 1)
 
+    def test_asset_retire_family(self):
+        ''' 测试资产清退 同时清退关联资产 '''
+        path = '/api/asset/retire'
+        response = self.client.post(path,
+                                    json.dumps({'nid': 1, 'retire_family': True}),
+                                    content_type='json')
+        self.assertEqual(response.json()['code'], 200)
+
     def test_asset_query(self):
         ''' 测试资产搜索 '''
         path = '/api/asset/query'
