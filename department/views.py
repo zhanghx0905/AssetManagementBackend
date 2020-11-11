@@ -10,7 +10,7 @@ def department_tree(request):
     ''' api/department/tree GET '''
     root = Department.objects.first().get_root()
     res = visit_tree(root)
-    return gen_response(code=200, data=res, message='获取部门层级')
+    return gen_response(code=200, data=res)
 
 
 @catch_exception('POST')
@@ -61,4 +61,4 @@ def department_edit(request):
 
     old_name, department.name = department.name, name
     department.save()
-    return gen_response(code=200, message=f'修改部门信息 {old_name} -> {name}')
+    return gen_response(code=200, message=f'将部门 {old_name} 更名为 {name}')

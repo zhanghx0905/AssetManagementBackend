@@ -14,15 +14,20 @@
 * __pytest.ini__ Configuration for [pytest](https://docs.pytest.org/en/latest/).
 * __requirements.txt__ Package manager with `pip`.
 * __requirements_dev.txt__ Package manager with `pip`, including extra tools for development.
+* **sonar-project.properties** sonarQube 配置
+* **.gitlab-ci.yml** gitlab CI 配置
+* **Dockerfile** Docker 环境配置
 
-### 附：本地检查是否能通过测试
+## Development manual
+
+### 本地检查是否能通过测试
 
 ```shell
 pylint --load-plugins=pylint_django app users asset department issue
 coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
 ```
 
-### 附：本地检查测试覆盖率
+### 本地检查测试覆盖率
 
 在根目录下创建`.coveragerc` 文件：
 

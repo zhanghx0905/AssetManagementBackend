@@ -24,7 +24,7 @@ def handling_list(request):
     res = get_issues_list(issues)
     issues = RequireIssue.objects.filter(handler=request.user, status='DOING')
     res += get_issues_list(issues)
-    return gen_response(code=200, data=res, message=f'获取用户 {request.user.username} 待办列表')
+    return gen_response(code=200, data=res)
 
 
 @catch_exception('GET')
@@ -37,7 +37,7 @@ def waiting_list(request):
     res = get_issues_list(issues)
     issues = RequireIssue.objects.filter(initiator=request.user)
     res += get_issues_list(issues)
-    return gen_response(code=200, data=res, message=f'获取用户 {request.user.username} 在办列表')
+    return gen_response(code=200, data=res)
 
 
 @catch_exception('POST')
@@ -58,7 +58,7 @@ def issue_require(request):
         asset_category=category,
         reason=reason
     )
-    return gen_response(code=200, message=f'{request.user.username} 请求领用资产类型 {category.name}')
+    return gen_response(code=200, message=f'{request.user.username} 请求领用 {category.name} 类型资产')
 
 
 @catch_exception('POST')
@@ -227,7 +227,7 @@ def issue_delete(request):
     else:
         issue: Issue = Issue.objects.get(id=issue_id)
     issue.delete()
-    return gen_response(code=200, message="删除事项")
+    return gen_response(code=200, message=f"{request.user.username} 删除待办事项")
 
 
 @catch_exception('POST')
