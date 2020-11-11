@@ -8,7 +8,7 @@ from .utils import auth_permission_required
 
 
 @catch_exception('GET')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def user_list(request):
     '''
     api/user/list GET
@@ -24,11 +24,11 @@ def user_list(request):
         'role': user.gen_roles(),
         'is_active': user.active,
     } for user in all_users]
-    return gen_response(code=200, data=res, message='获取用户列表')
+    return gen_response(code=200, data=res)
 
 
 @catch_exception('POST')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def user_delete(request):
     ''' api/user/delete POST
     删除用户。
@@ -48,7 +48,7 @@ def user_delete(request):
 
 
 @catch_exception('POST')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def user_exist(request):
     ''' api/user/exist POST
     用户名是否存在。
@@ -64,7 +64,7 @@ def user_exist(request):
 
 
 @catch_exception('POST')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def user_add(request):
     '''  api/user/add POST
     添加用户。
@@ -93,7 +93,7 @@ def user_add(request):
 
 
 @catch_exception('POST')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def user_edit(request):
     '''  api/user/edit POST
     编辑用户。
@@ -125,7 +125,7 @@ def user_edit(request):
 
 
 @catch_exception('POST')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def user_lock(request):
     ''' api/user/lock POST
     锁定用户
@@ -205,7 +205,7 @@ def user_info(request):
         "department": user.department.name,
         "avatar": ''
     }
-    return gen_response(status=0, userInfo=info, message=f'获取用户 {user.username} 信息')
+    return gen_response(status=0, userInfo=info)
 
 
 @catch_exception('POST')
@@ -233,4 +233,4 @@ def user_assets(request):
     user = request.user
     assets = Asset.objects.filter(owner=user, status='IN_USE')
     res = get_assets_list(assets)
-    return gen_response(data=res, code=200, message=f'获得 {user.username} 名下的资产')
+    return gen_response(data=res, code=200)
