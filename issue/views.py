@@ -24,6 +24,7 @@ def handling_list(request):
     res = get_issues_list(issues)
     issues = RequireIssue.objects.filter(handler=request.user, status='DOING')
     res += get_issues_list(issues)
+    res.sort(key=lambda issue: issue['start_time'].timestamp())
     return gen_response(code=200, data=res)
 
 
@@ -37,6 +38,7 @@ def waiting_list(request):
     res = get_issues_list(issues)
     issues = RequireIssue.objects.filter(initiator=request.user)
     res += get_issues_list(issues)
+    res.sort(key=lambda issue: issue['start_time'].timestamp())
     return gen_response(code=200, data=res)
 
 

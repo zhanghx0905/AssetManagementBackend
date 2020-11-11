@@ -14,7 +14,7 @@ class AbstractIssue(models.Model):
     handler = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name='处理者',
                                 related_name='%(app_label)s_%(class)s_hanlder')
-
+    start_time = models.DateTimeField(verbose_name='发起时间', auto_now_add=True)
     status_choices = [
         ('DOING', '进行中'),
         ('SUCCESS', '成功'),
@@ -29,6 +29,7 @@ class AbstractIssue(models.Model):
             'nid': self.id,
             'initiator': self.initiator.username,
             'status': self.status,
+            'start_time': self.start_time
         }
 
     class Meta:
@@ -64,8 +65,11 @@ class Issue(AbstractIssue):
         })
         assets = self.asset.get_entire_tree()
         res['asset'] = ','.join(str(asset) for asset in assets)
-        if self.assignee is not None:
-            res['info'] = f"维保人：{self.assignee.username}"
+
+        if self.type_name == 'MAINTAIN':
+            res['info'] = f"维保人：{self.handler.username}"
+        elif self.type_name == 'TRANSFER':
+            res['info'] = f'转移人：{self.assignee.username}'
         return res
 
 

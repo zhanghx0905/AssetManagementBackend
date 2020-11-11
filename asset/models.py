@@ -84,11 +84,9 @@ class Asset(MPTTModel):
         return {
             'nid': self.id,
             'name': self.name,
-            'quantity': 1,
             'value': self.value,
             'now_value': self.now_value,
             'category': self.category.name,
-            'type_name': '条目型',
             'description': self.description,
             'parent_id': '' if self.parent is None else self.parent.id,
             'parent': self.parent_formated,
@@ -121,19 +119,14 @@ class Asset(MPTTModel):
     @property
     def parent_formated(self) -> str:
         ''' 父资产 格式化为 资产名(资产id)'''
-        return '无' if self.parent is None else str(self.parent.name)
-
-    @property
-    def children(self):
-        ''' 子资产 Query Set '''
-        return self.__class__.objects.filter(parent=self)
+        return '无' if self.parent is None else str(self.parent)
 
     @property
     def children_formated(self):
         ''' 格式化的子资产 '''
-        children = self.children
-        if not children.exists():
+        if self.is_leaf_node():
             return '无'
+        children = self.get_children()
         return ','.join(str(child) for child in children)
 
     def get_asset_manager(self):
