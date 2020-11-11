@@ -203,12 +203,15 @@ def issue_permit_require(request):
     '''
     issue_id, asset_ids = parse_args(request.body, 'nid', 'selectedRows')
     issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
+    assets = set()
     for asset_id in asset_ids:
         asset: Asset = Asset.objects.get(id=asset_id)
+        assets.update(asset.get_entire_tree())
+    for asset in assets:
         asset.owner = issue.initiator
         asset.status = 'IN_USE'
         asset._change_reason = '领用'
-        asset.save(tree_update=True)
+        asset.save()
         issue.asset.add(asset)
     issue.status = 'SUCCESS'
     issue.save()

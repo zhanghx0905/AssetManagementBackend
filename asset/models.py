@@ -50,6 +50,20 @@ class Asset(MPTTModel):
                                                  'category', 'value',
                                                  'lft', 'rght', 'level', 'tree_id', ])
 
+    def get_entire_tree(self) -> list:
+        ''' 层次遍历 获得由资产父子关系定义的整棵资产树 '''
+        item_queue = queue.Queue()
+        res = []
+        item_queue.put(self.get_root())
+        while not item_queue.empty():
+            item: Asset = item_queue.get()
+            res.append(item)
+            if not item.is_leaf_node():
+                children = item.get_children()
+                for asset in children:
+                    item_queue.put(asset)
+        return res
+
     def save(self, *args, tree_update=False, **kwargs):
         ''' 在某些属性变化时，改变资产相关的父子资产 '''
         def do_update(asset: Asset):
@@ -59,16 +73,9 @@ class Asset(MPTTModel):
             asset.save()
 
         if tree_update:  # 层次遍历更新整棵资产树
-            item_queue, root = queue.Queue(), self.get_root()
-            do_update(root)
-            item_queue.put(root)
-            while not item_queue.empty():
-                item: Asset = item_queue.get()
-                if not item.is_leaf_node():
-                    children = item.get_children()
-                    for asset in children:
-                        do_update(asset)
-                        item_queue.put(asset)
+            tree_list = self.get_entire_tree()
+            for asset in tree_list:
+                do_update(asset)
         else:
             super().save(*args, **kwargs)
 
@@ -114,7 +121,7 @@ class Asset(MPTTModel):
     @property
     def parent_formated(self) -> str:
         ''' 父资产 格式化为 资产名(资产id)'''
-        return '无' if self.parent is None else f'{self.parent.name}(id={self.parent.id})'
+        return '无' if self.parent is None else str(self.parent.name)
 
     @property
     def children(self):
@@ -127,8 +134,7 @@ class Asset(MPTTModel):
         children = self.children
         if not children.exists():
             return '无'
-        res = [f"{child.name}(id={child.id})" for child in children]
-        return ','.join(res)
+        return ','.join(str(child) for child in children)
 
     def get_asset_manager(self):
         '''
@@ -143,6 +149,9 @@ class Asset(MPTTModel):
             if manager is not None:
                 break
         return manager
+
+    def __str__(self) -> str:
+        return f'{self.name}(id={self.id})'
 
 
 class CustomAttr(models.Model):

@@ -40,8 +40,8 @@ def user_delete(request):
         203: admin can't be deleted
     '''
     name = parse_args(request.body, 'name')[0]
-    if name == 'admin':
-        return gen_response(message='admin 不能被删除', code=203)
+    if name in ['admin', request.user.username]:
+        return gen_response(message='不能删除自己或admin', code=203)
     user = User.objects.get(username=name)
     user.delete()
     return gen_response(code=200, message=f'删除用户 {name}')

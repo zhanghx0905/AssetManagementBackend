@@ -57,11 +57,13 @@ class Issue(AbstractIssue):
         ''' 转换成字典 '''
         res = super().to_dict()
         res.update({
-            'asset': f'{self.asset.name}(id={self.asset.id})',
             'type_name': self.type_name,
             'category': self.asset.category.name,
             'info': '',
+            'asset': ''
         })
+        assets = self.asset.get_entire_tree()
+        res['asset'] = ','.join(str(asset) for asset in assets)
         if self.assignee is not None:
             res['info'] = f"维保人：{self.assignee.username}"
         return res
@@ -83,9 +85,10 @@ class RequireIssue(AbstractIssue):
             'type_name': 'REQUIRE',
             'category': self.asset_category.name,
             'info': f'事由：{self.reason}',
+            'asset': ''
         })
-        asset_names = []
+        assets = set()
         for asset in self.asset.all():
-            asset_names.append(f'{asset.name}(id={asset.id})')
-        res['asset'] = ','.join(asset_names)
+            assets.update(asset.get_entire_tree())
+        res['asset'] = ','.join(str(asset) for asset in assets)
         return res
