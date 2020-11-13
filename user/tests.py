@@ -4,7 +4,7 @@ import json
 from django.test import TestCase
 
 from app.utils import init_test
-from .models import User
+from .models import User, UserPermission
 
 
 class UserTest(TestCase):
@@ -209,7 +209,7 @@ class UserTest(TestCase):
 
         user.token = token
         user.save()
-        res = user_verified({'Token': token}, ['users.IT'])
+        res = user_verified({'Token': token}, [UserPermission.IT.value])
         self.assertEqual(res, '权限不足')
 
     def test_user_assets(self):

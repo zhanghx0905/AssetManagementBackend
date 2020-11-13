@@ -27,13 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'user.User'
 
 # Application definition
 
 INSTALLED_APPS = [
     'asset.apps.AssetConfig',
-    'users.apps.UsersConfig',
+    'user.apps.UserConfig',
     'department.apps.DepartmentConfig',
     'issue.apps.IssueConfig',
     'django.contrib.admin',

@@ -1,4 +1,4 @@
-''' users/apps.py '''
+''' user/apps.py '''
 from django.apps import AppConfig
 from django.db.utils import IntegrityError, OperationalError
 
@@ -7,8 +7,8 @@ def init_department():
     '''设置初始部门层级'''
     from department.models import Department
 
-    if not Department.objects.filter(name='部门').exists():
-        top_department = Department(name='部门', parent=None)
+    if not Department.objects.all().exists():
+        top_department = Department(name='总公司', parent=None)
         top_department.save()
         for i in range(2):
             department = Department(name=f'子部门{i}', parent=top_department)
@@ -29,9 +29,9 @@ def add_admin():
 def add_old_asset():
     ''' 增加一个旧资产，以展示资产折旧 '''
     from asset.models import Asset, AssetCategory
-    from users.models import User
+    from user.models import User
     from datetime import timedelta
-    if not Asset.objects.filter(name='旧资产').exists():
+    if not Asset.objects.all().exists():
         asset = Asset(name='旧资产',
                       value=10000,
                       category=AssetCategory.root(),
@@ -43,9 +43,9 @@ def add_old_asset():
         asset.save()
 
 
-class UsersConfig(AppConfig):
+class UserConfig(AppConfig):
     ''' UsersConfig '''
-    name = 'users'
+    name = 'user'
 
     def ready(self) -> None:
         ''' 在子类中重写此方法，以便在Django启动时运行代码。 '''

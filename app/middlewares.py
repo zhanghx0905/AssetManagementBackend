@@ -34,7 +34,7 @@ class RequestLogMiddleware(MiddlewareMixin):
 
         LOCAL.path = request.path
         LOCAL.method = request.method
-        from users.models import User
+        from user.models import User
         try:
             token = request.COOKIES['Token']
             decoded = jwt.decode(token, verify=False)

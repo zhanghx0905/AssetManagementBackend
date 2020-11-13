@@ -1,6 +1,6 @@
 '''views of app department'''
 from app.utils import catch_exception, gen_response, parse_args, visit_tree
-from users.utils import auth_permission_required
+from user.utils import auth_permission_required
 from .models import Department
 
 

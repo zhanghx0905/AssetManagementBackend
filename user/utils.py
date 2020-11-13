@@ -1,4 +1,4 @@
-''' utils for App users '''
+''' utils for App user '''
 from functools import partial, wraps
 
 import jwt
@@ -40,7 +40,7 @@ def auth_permission_required(*perms):
 
     例:
     @catch_exception('POST')
-    @auth_permission_required("users.IT", "users.SYSTEM")
+    @auth_permission_required(UserPermission.IT.value, UserPermission.SYSTEM.value)
     def foo(request):
         pass
     '''

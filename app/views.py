@@ -3,13 +3,13 @@ Basic views
 '''
 import json
 
-from users.utils import auth_permission_required
+from user.utils import auth_permission_required
 from .settings import LOGS_FILE_DIR
 from .utils import catch_exception, gen_response, parse_args
 
 
 @catch_exception('POST')
-@auth_permission_required('users.SYSTEM')
+@auth_permission_required()
 def get_logs(request):
     ''' api/logs POST
     para: offset(int) = 0, size(int) = 20

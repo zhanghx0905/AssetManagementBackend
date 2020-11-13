@@ -5,7 +5,7 @@
 ### Structure
 
 * __app__ Core settings for Django.
-  - users 用户模块
+  - user 用户模块
   - asset 资产模块
   - department  部门模块
   - issue 事项模块
@@ -23,7 +23,7 @@
 ### 本地检查是否能通过测试
 
 ```shell
-pylint --load-plugins=pylint_django app users asset department issue
+pylint --load-plugins=pylint_django app user asset department issue
 coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
 ```
 
@@ -33,7 +33,7 @@ coverage run -m pytest --junit-xml=xunit-reports/xunit-result.xml
 
 ```
 [run]
-source = app,users,asset,department,issue
+source = app,user,asset,department,issue
 [report]
 show_missing = True
 ```

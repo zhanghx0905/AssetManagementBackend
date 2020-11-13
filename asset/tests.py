@@ -7,7 +7,7 @@ from simple_history.utils import update_change_reason
 
 from app.utils import init_test
 from asset.models import AssetCategory, Asset, CustomAttr
-from users.apps import add_old_asset, init_department
+from user.apps import add_old_asset, init_department
 from .apps import init_category
 
 

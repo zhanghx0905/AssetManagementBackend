@@ -124,7 +124,7 @@ def catch_exception(*valid_http_methods):
 def init_test(test: TestCase):
     ''' 在测试模块的setUp函数中调用，
     以初始化资源并登录admin '''
-    from users.apps import add_admin, init_department
+    from user.apps import add_admin, init_department
     init_department()
     add_admin()
     response = test.client.post('/api/user/login',

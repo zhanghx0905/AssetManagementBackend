@@ -5,7 +5,7 @@ from mptt.exceptions import InvalidMove
 from app.utils import (catch_exception, gen_response, parse_args, parse_list,
                        visit_tree)
 from department.models import Department
-from users.utils import auth_permission_required
+from user.utils import auth_permission_required
 
 from .models import Asset, AssetCategory, CustomAttr, AssetCustomAttr
 from .utils import gen_history, get_assets_list

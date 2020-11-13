@@ -1,4 +1,4 @@
-''' URLS for App users, start with api/user/ '''
+''' URLS for App user, start with api/user/ '''
 from django.urls import path
 
 from . import views

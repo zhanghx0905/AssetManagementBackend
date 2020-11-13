@@ -20,7 +20,7 @@ from . import views
 
 
 urlpatterns = [
-    path('api/user/', include(('users.urls', '用户'), namespace='用户')),
+    path('api/user/', include(('user.urls', '用户'), namespace='用户')),
     path('api/asset/', include(('asset.urls', '资产'), namespace='资产')),
     path('api/department/', include(('department.urls', '部门'), namespace='部门')),
     path('api/issue/', include(('issue.urls', '事项'), namespace='事项')),

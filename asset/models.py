@@ -6,7 +6,7 @@ from django.db import models
 from mptt.models import MPTTModel, TreeForeignKey
 from simple_history.models import HistoricalRecords
 
-from users.models import User
+from user.models import User
 from department.models import Department
 
 
