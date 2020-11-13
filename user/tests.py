@@ -209,7 +209,7 @@ class UserTest(TestCase):
 
         user.token = token
         user.save()
-        res = user_verified({'Token': token}, [UserPermission.IT])
+        res = user_verified({'Token': token}, [UserPermission.IT.value])
         self.assertEqual(res, '权限不足')
 
     def test_user_assets(self):

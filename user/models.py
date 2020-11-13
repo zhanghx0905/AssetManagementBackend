@@ -43,11 +43,11 @@ class User(AbstractUser):
     def gen_roles(self) -> list:
         ''' generate roles to deliver for a user '''
         role = []
-        if self.has_perm(UserPermission.IT):
+        if self.has_perm(UserPermission.IT.value):
             role.append('IT')
-        if self.has_perm(UserPermission.ASSET):
+        if self.has_perm(UserPermission.ASSET.value):
             role.append('ASSET')
-        if self.has_perm(UserPermission.SYSTEM):
+        if self.has_perm(UserPermission.SYSTEM.value):
             role.append('SYSTEM')
         return role + ['STAFF']
 

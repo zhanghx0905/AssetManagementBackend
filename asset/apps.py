@@ -7,7 +7,7 @@ def init_category():
     '''初始化资产分类'''
     from .models import AssetCategory
     try:
-        if not AssetCategory.objects.filter(name='资产'):
+        if not AssetCategory.objects.all().exists():
             root = AssetCategory(name='资产', parent=None)
             root.save()
 

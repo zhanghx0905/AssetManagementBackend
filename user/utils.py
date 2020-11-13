@@ -40,7 +40,7 @@ def auth_permission_required(*perms):
 
     例:
     @catch_exception('POST')
-    @auth_permission_required(UserPermission.IT, UserPermission.SYSTEM)
+    @auth_permission_required(UserPermission.IT.value, UserPermission.SYSTEM.value)
     def foo(request):
         pass
     '''

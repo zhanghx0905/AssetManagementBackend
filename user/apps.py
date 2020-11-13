@@ -7,8 +7,8 @@ def init_department():
     '''设置初始部门层级'''
     from department.models import Department
 
-    if not Department.objects.filter(name='部门').exists():
-        top_department = Department(name='部门', parent=None)
+    if not Department.objects.all().exists():
+        top_department = Department(name='总公司', parent=None)
         top_department.save()
         for i in range(2):
             department = Department(name=f'子部门{i}', parent=top_department)
@@ -31,7 +31,7 @@ def add_old_asset():
     from asset.models import Asset, AssetCategory
     from user.models import User
     from datetime import timedelta
-    if not Asset.objects.filter(name='旧资产').exists():
+    if not Asset.objects.all().exists():
         asset = Asset(name='旧资产',
                       value=10000,
                       category=AssetCategory.root(),

@@ -18,6 +18,6 @@ class Department(MPTTModel):
         from user.models import User, UserPermission
         user = User.objects.filter(department=self)
         for user in user:  # 随机找一个资产管理员
-            if user.has_perm(UserPermission.ASSET):
+            if user.has_perm(UserPermission.ASSET.value):
                 return user
         return None
