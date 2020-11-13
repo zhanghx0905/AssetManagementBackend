@@ -6,7 +6,7 @@ from django.test import TestCase
 from app.utils import init_test
 from asset.apps import init_category
 from asset.models import Asset, AssetCategory
-from users.models import User
+from user.models import User
 from .models import Issue, RequireIssue
 
 

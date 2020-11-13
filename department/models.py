@@ -15,9 +15,9 @@ class Department(MPTTModel):
 
     def get_asset_manager(self):
         ''' 获得本部门的资产管理员 '''
-        from users.models import User
-        users = User.objects.filter(department=self)
-        for user in users:  # 随机找一个资产管理员
-            if user.has_perm('users.ASSET'):
+        from user.models import User, UserPermission
+        user = User.objects.filter(department=self)
+        for user in user:  # 随机找一个资产管理员
+            if user.has_perm(UserPermission.ASSET):
                 return user
         return None

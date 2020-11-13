@@ -1,7 +1,7 @@
 ''' models for issue '''
 from django.db import models
 
-from users.models import User
+from user.models import User
 from asset.models import Asset, AssetCategory
 
 

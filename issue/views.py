@@ -2,8 +2,8 @@
 from app.utils import catch_exception, gen_response, parse_args
 from asset.models import Asset, AssetCategory
 from asset.utils import get_assets_list
-from users.models import User
-from users.utils import auth_permission_required
+from user.models import User
+from user.utils import auth_permission_required
 
 from .models import Issue, RequireIssue
 from .utils import get_issues_list

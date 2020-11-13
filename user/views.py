@@ -16,14 +16,14 @@ def user_list(request):
     return: data([{}]), code =
         200: success
     '''
-    all_users = User.objects.filter()
+    all_user = User.objects.filter()
     res = [{
         'name': user.username,
         'department': user.department.name,
         'department_id': user.department.id,
         'role': user.gen_roles(),
         'is_active': user.active,
-    } for user in all_users]
+    } for user in all_user]
     return gen_response(code=200, data=res)
 
 

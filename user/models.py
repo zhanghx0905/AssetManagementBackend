@@ -1,5 +1,5 @@
-''' users/models.py '''
-
+''' user/models.py '''
+from enum import Enum
 from datetime import datetime, timedelta
 
 import jwt
@@ -8,6 +8,13 @@ from django.db import models
 
 from app.settings import SECRET_KEY
 from department.models import Department
+
+
+class UserPermission(Enum):
+    ''' 用户权限枚举类 '''
+    IT = 'user.IT'
+    ASSET = 'user.ASSET'
+    SYSTEM = 'user.SYSTEM'
 
 
 class User(AbstractUser):
@@ -36,11 +43,11 @@ class User(AbstractUser):
     def gen_roles(self) -> list:
         ''' generate roles to deliver for a user '''
         role = []
-        if self.has_perm('users.IT'):
+        if self.has_perm(UserPermission.IT):
             role.append('IT')
-        if self.has_perm('users.ASSET'):
+        if self.has_perm(UserPermission.ASSET):
             role.append('ASSET')
-        if self.has_perm('users.SYSTEM'):
+        if self.has_perm(UserPermission.SYSTEM):
             role.append('SYSTEM')
         return role + ['STAFF']
 
