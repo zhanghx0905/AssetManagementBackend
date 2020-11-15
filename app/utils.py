@@ -104,7 +104,8 @@ def catch_exception(*valid_http_methods):
     error_response = partial(gen_response, status=1)
 
     def decorator(func):
-        func = csrf_exempt(func)  # disable csrf authentic
+        dummy = csrf_exempt
+        func = dummy(func)  # disable csrf authentic
 
         @wraps(func)
         def inner(request, *args, **kwargs):
