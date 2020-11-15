@@ -9,7 +9,7 @@ from functools import partial, wraps
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http.response import JsonResponse
 from django.test.testcases import TestCase
-
+from django.views.decorators.csrf import csrf_exempt
 
 LOGGER = logging.getLogger('web.log')
 
@@ -104,6 +104,8 @@ def catch_exception(*valid_http_methods):
     error_response = partial(gen_response, status=1)
 
     def decorator(func):
+        func = csrf_exempt(func)  # disable csrf authentic
+
         @wraps(func)
         def inner(request, *args, **kwargs):
             if request.method not in valid_http_methods:
