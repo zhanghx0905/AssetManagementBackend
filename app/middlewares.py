@@ -6,9 +6,10 @@ import jwt
 from django.utils.deprecation import MiddlewareMixin
 
 LOCAL = threading.local()
+DummyBase = logging.Filter
 
 
-class RequestLogFilter(logging.Filter):
+class RequestLogFilter(DummyBase):
     '''
     日志过滤器
     '''
