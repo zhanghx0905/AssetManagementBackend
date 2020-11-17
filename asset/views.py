@@ -285,11 +285,14 @@ def asset_allocate(request):
     target_manager = department.get_asset_manager()
     if target_manager is None:
         return gen_response(code=203, message=f'{department.name} 没有资产管理员')
+    assets = set()
     for nid in asset_id_list:
         asset: Asset = Asset.objects.get(id=nid)
+        assets.update(asset.get_entire_tree())
+    for asset in assets:
         asset.owner = target_manager
         asset._change_reason = '调拨'
-        asset.save(tree_update=True)
+        asset.save()
     return gen_response(code=200,
                         message=f'{request.user.username} 向部门 {department.name} '
                                 f'调拨 {len(asset_id_list)}资产')

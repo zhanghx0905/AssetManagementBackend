@@ -15,9 +15,9 @@ class RequestLogFilter(DummyBase):
     '''
 
     def filter(self, record):
-        record.path = getattr(LOCAL, 'path', 'none')
-        record.method = getattr(LOCAL, 'method', 'none')
-        record.username = getattr(LOCAL, 'username', 'none')
+        record.path = getattr(LOCAL, 'path', 'unknown')
+        record.method = getattr(LOCAL, 'method', 'unknown')
+        record.username = getattr(LOCAL, 'username', 'unknown')
 
         return True
 

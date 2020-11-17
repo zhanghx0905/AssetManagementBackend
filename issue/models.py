@@ -59,7 +59,6 @@ class Issue(AbstractIssue):
         res = super().to_dict()
         res.update({
             'type_name': self.type_name,
-            'category': self.asset.category.name,
             'info': '',
             'asset': ''
         })
@@ -87,8 +86,7 @@ class RequireIssue(AbstractIssue):
         res = super().to_dict()
         res.update({
             'type_name': 'REQUIRE',
-            'category': self.asset_category.name,
-            'info': f'事由：{self.reason}',
+            'info': f'资产类别: {self.asset_category.name} 事由：{self.reason}',
             'asset': ''
         })
         assets = set()

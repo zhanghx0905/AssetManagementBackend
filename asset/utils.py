@@ -1,4 +1,13 @@
 ''' utils function for App asset '''
+from collections import UserDict
+
+
+class EchoDict(UserDict):
+    ''' 特殊的字典，对于不在字典中的key，返回key本身 '''
+
+    def __missing__(self, key):
+        return key
+
 
 HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
 FIELD_TO_ZH = {
@@ -8,6 +17,12 @@ FIELD_TO_ZH = {
     'status': '状态',
     'owner': '挂账人',
 }
+CODE_TO_ZH = EchoDict({
+    'IDLE': '空闲中',
+    'IN_USE': '使用中',
+    'IN_MAINTAIN': '维护中',
+    'RETIRED': '已清退',
+})
 
 
 def gen_history(record):
@@ -24,7 +39,8 @@ def gen_history(record):
     if record.prev_record is not None:
         delta = record.diff_against(record.prev_record)
         for change in delta.changes:
-            info.append(f"{FIELD_TO_ZH[change.field]} 从 {change.old} 变为 {change.new}")
+            info.append(f"{FIELD_TO_ZH[change.field]} 从 "
+                        f"{CODE_TO_ZH[change.old]} 变为 {CODE_TO_ZH[change.new]}")
     record_dict['info'] = info
     return record_dict
 
