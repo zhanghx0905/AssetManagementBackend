@@ -144,7 +144,7 @@ LOGS_DIR = os.path.join(BASE_DIR, 'logs')
 LOGS_FILE_DIR = os.path.join(LOGS_DIR, 'web-log.log')
 os.makedirs(LOGS_DIR, exist_ok=True)
 
-LOGING_FORMAT = ('{"time": "%(asctime)s", "method": "%(method)s", "level": "%(levelname)s", '
+LOGING_FORMAT = ('{"time": "%(asctime)s", "method": "%(method)s", '
                  '"path": "%(path)s", "message": "%(message)s", "username": "%(username)s"}')
 
 LOGGING = {

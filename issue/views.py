@@ -234,6 +234,8 @@ def issue_delete(request):
         issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
     else:
         issue: Issue = Issue.objects.get(id=issue_id)
+    if issue.status != 'DOING':
+        return gen_response(code=203, message='已办结的事项不能删除')
     issue.delete()
     return gen_response(code=200, message=f"{request.user.username} 删除待办事项")
 
