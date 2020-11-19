@@ -1,13 +1,5 @@
 ''' utils function for App asset '''
-from collections import UserDict
-
-
-class EchoDict(UserDict):
-    ''' 特殊的字典，对于不在字典中的key，返回key本身 '''
-
-    def __missing__(self, key):
-        return key
-
+from app.utils import EchoDict
 
 HISTORY_OP_TYPE = {'~': '更新', '+': '创建', '-': '删除'}
 FIELD_TO_ZH = {

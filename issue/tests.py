@@ -4,8 +4,8 @@ import json
 from django.test import TestCase
 
 from app.utils import init_test
-from asset.apps import init_category
 from asset.models import Asset, AssetCategory
+from user.apps import init_category
 from user.models import User
 from .models import Issue, RequireIssue
 
@@ -25,19 +25,20 @@ class IssueTest(TestCase):
                              status='IDLE',
                              service_life=10,
                              owner=User.admin())
+        self.category = AssetCategory.root().name
 
     def test_require_return_handle(self):
         """ test for issue_require issue_return """
         # require
         path = '/api/issue/require'
         response = self.client.post(path,
-                                    json.dumps({"category": '资产'}),
+                                    json.dumps({"category": self.category}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)
 
         # 触发 IssueConflictIssue 异常
         response = self.client.post(path,
-                                    json.dumps({"category": '资产'}),
+                                    json.dumps({"category": self.category}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 203)
 
@@ -159,6 +160,6 @@ class IssueTest(TestCase):
         path = '/api/issue/require-asset-list'
 
         response = self.client.post(path,
-                                    json.dumps({'category': '资产'}),
+                                    json.dumps({'category': self.category}),
                                     content_type='json')
         self.assertEqual(response.json()['code'], 200)

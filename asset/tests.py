@@ -7,8 +7,7 @@ from simple_history.utils import update_change_reason
 
 from app.utils import init_test
 from asset.models import AssetCategory, Asset, CustomAttr
-from user.apps import add_old_asset, init_department
-from .apps import init_category
+from user.apps import add_old_asset, init_department, init_category
 
 
 class AssetTest(TestCase):
@@ -21,6 +20,7 @@ class AssetTest(TestCase):
         添加旧资产 '''
         init_test(self)
         init_category()
+        self.category = AssetCategory.root().name
         init_department()
         CustomAttr.objects.create(name='自定义')
         add_old_asset()
@@ -139,7 +139,7 @@ class AssetTest(TestCase):
         path = '/api/asset/query'
         paras = {
             'name': '旧',
-            'category': '资产',
+            'category': self.category,
             'description': '信息',
             'customKey': '自定义',
             'customValue': ''
@@ -166,7 +166,7 @@ class AssetTest(TestCase):
                     "name": "ye",
                     "type_name": "AMOUNT",
                     "value": "1111",
-                    "category": "资产",
+                    "category": self.category,
                     "service_life": "1",
                     "custom": {
                         "自定义": "请"

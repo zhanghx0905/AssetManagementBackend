@@ -4,12 +4,21 @@ utils文件下的函数一般不用特别测试
 '''
 import json
 import logging
+from collections import UserDict
 from functools import partial, wraps
 
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.http.response import JsonResponse
 from django.test.testcases import TestCase
 from django.views.decorators.csrf import csrf_exempt
+
+
+class EchoDict(UserDict):
+    ''' 特殊的字典，对于不在字典中的key，返回key本身 '''
+
+    def __missing__(self, key):
+        return key
+
 
 LOGGER = logging.getLogger('web.log')
 
@@ -102,6 +111,12 @@ def catch_exception(*valid_http_methods):
         pass
     '''
     error_response = partial(gen_response, status=1)
+    en_to_sc = EchoDict({
+        'User': '用户',
+        'Asset': '资产',
+        'AssetCategory': '资产类型',
+        'Department': '部门',
+    })
 
     def decorator(func):
         dummy = csrf_exempt
@@ -115,8 +130,9 @@ def catch_exception(*valid_http_methods):
                 response = func(request, *args, **kwargs)
             except KeyError as err:   # POST 请求体错误
                 return error_response(message=str(err), code=201)
-            except ObjectDoesNotExist:   # 数据库对应表项不存在错误
-                return error_response(message='数据库对应表项不存在', code=202)
+            except ObjectDoesNotExist as err:   # 数据库对应表项不存在错误
+                msg = str(err).split()[0]
+                return error_response(message=f'指定的{en_to_sc[msg]}不存在', code=202)
             except ValidationError as err:  # 数据库格式错误
                 return error_response(message=str(err).replace('"', "'"), code=400)
             return response
