@@ -204,6 +204,8 @@ def issue_permit_require(request):
         selectedRows(List[int]): 资产id列表
     '''
     issue_id, asset_ids = parse_args(request.body, 'nid', 'selectedRows')
+    if len(asset_ids) == 0:
+        return gen_response(code=204, message='没有指定任何资产')
     issue: RequireIssue = RequireIssue.objects.get(id=issue_id)
     assets = set()
     for asset_id in asset_ids:
