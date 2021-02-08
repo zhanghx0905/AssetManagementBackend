@@ -1,6 +1,10 @@
 # README
 
-后端API文档正在转移至[在线版本](https://www.showdoc.com.cn/AssetManagementBackendDoc)。
+企业固定资产管理系统 后端仓库，2020 THU-CST 软件工程优秀大作业.
+
+[前端仓库](https://github.com/xieyt2000/AssetManagementFrontend)
+
+[在线部署](https://asset-management-frontend-goodnight.app.secoder.net/#/login)
 
 ### Structure
 
