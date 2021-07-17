@@ -4,8 +4,6 @@
 
 [前端仓库](https://github.com/xieyt2000/AssetManagementFrontend)
 
-[在线部署](https://asset-management-frontend-goodnight.app.secoder.net/#/login)
-
 ### Structure
 
 * __app__ Core settings for Django.
